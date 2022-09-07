@@ -1,0 +1,21 @@
+# Ignore everything
+*
+
+# Except for:
+#   directories (so that Git will recurse)
+!*/
+
+#   source files
+!src/**/*.h
+!src/**/*.cpp
+!test/*.h
+!test/*.cpp
+
+#   other useful things
+!.gitignore
+!CMakeLists.txt
+!README.md
+
+# DO ignore CMake-generated content
+_deps/
+CMakeFiles/
