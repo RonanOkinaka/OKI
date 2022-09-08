@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 include(FetchContent)
 
-project(oki_unit LANGUAGES C CXX)
+project(oki_unit LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 
 FetchContent_Declare(
