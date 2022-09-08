@@ -1,7 +1,8 @@
 #include "oki/util/oki_handle_gen.h"
 #include "oki/oki_handle.h"
 
-#include "catch2/catch_all.hpp"
+#include "catch2/catch_test_macros.hpp"
+#include "catch2/catch_template_test_macros.hpp"
 
 #include <array>
 #include <algorithm>
@@ -11,7 +12,7 @@
  * We know that (for this implementation) the handle generators will create the
  * same sequence std::iota() would, but only formally guarantee that the handles 
  * will be distinct and not compare equal to the invalid handle constant.
- * 
+ *
  * Generalized guarantees go in this test case.
  */
 TEMPLATE_TEST_CASE("All handle generators", "[logic][ecs][handle]",
