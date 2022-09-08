@@ -2,7 +2,7 @@
 
 # OKI: An ECS Framework
 </br>
-`OKI` (pronounced "oh-kee") is a header-only library for C++17 inspired by `entt`, which was created by user skypjack. It implements a similar entity-component-system (ECS) architecture, which is used to organize high-performance, cache-local computations -- such as those used in games or simulations.
+<code>OKI</code> (pronounced "oh-kee") is a header-only library for C++17 inspired by <code>entt</code>, which was created by user skypjack. It implements a similar entity-component-system (ECS) architecture, which is used to organize high-performance, cache-local computations -- such as those used in games or simulations.
 </div>
 
 ## Goals
@@ -15,10 +15,12 @@ This is a benefit in and of itself, but comes with other welcome merits. This is
 
 ## Building
 
-At the moment, this "library" is header-only (due in large part to the heavy use of template classes). So, building is easy: `#include "include/oki_ecs.h"`, use the library, then compile your code.
+At the moment, this "library" is header-only (due in large part to the heavy use of template classes). 
+
+So, building is easy: `#include "oki/oki_ecs.h"`, use the library, then compile your code.
 
 There are a set of tests using `catch2`, which `CMake` will download and install automatically. So, the steps are similarly simple:
 - `cd test`
-- `cmake -G "your favorite generator" .`
+- `cmake .`
 - `cmake --build .`
 - `./oki_unit`
