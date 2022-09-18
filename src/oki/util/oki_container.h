@@ -1,8 +1,6 @@
 #ifndef OKI_CONTAINER_H
 #define OKI_CONTAINER_H
 
-#include "oki/util/oki_handle_gen.h"
-
 #include <algorithm>
 #include <cstdint>
 #include <iterator>
