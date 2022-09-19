@@ -1,6 +1,8 @@
 #include "oki/oki_handle.h"
 #include "oki/util/oki_container.h"
 
+#include "oki_test_util.h"
+
 #include "catch2/catch_test_macros.hpp"
 
 #include <algorithm>
@@ -48,8 +50,12 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         }
     };
 
+    test_insertion(std::mem_fn(&decltype(map)::emplace<const char*>), "emplace");
     test_insertion(std::mem_fn(&decltype(map)::insert<const char*>), "insert");
     test_insertion(std::mem_fn(&decltype(map)::insert_or_assign<const char*>), "insert_or_assign");
+    test_insertion([](auto& map, auto key, auto& value) {
+        return std::make_pair(map.emplace_unchecked(key, value), true);
+    }, "emplace_unchecked");
     test_insertion([](auto& map, auto key, auto& value) {
         return std::make_pair(map.insert_unchecked(key, value), true);
     }, "insert_unchecked");
@@ -129,6 +135,61 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
     {
         map.clear();
         CHECK(map.size() == 0);
+    }
+
+    SECTION("(lifetime management)")
+    {
+        using Value = test_helper::ObjHelper;
+        Value::reset();
+
+        using TestType = oki::intl_::AssocSortedVector<oki::Handle, Value>;
+
+        // I'm only testing emplace() here because I am lazy and happen to know
+        // that this actually tests all of the relevant behavior
+        SECTION("calls constructor on arguments to emplace()")
+        {
+            {
+                auto lifetimeMap = TestType();
+                auto [iter, success] = lifetimeMap.emplace(1, 1);
+
+                REQUIRE(iter->second.value_ == 1);
+            }
+
+            Value::test();
+            CHECK(Value::numConstructs == 1);
+            CHECK(Value::numCopies == 0);
+            CHECK(Value::numMoves == 0);
+        }
+        SECTION("can move-construct in emplace()")
+        {
+            {
+                auto lifetimeMap = TestType();
+                auto value = Value{ 1 };
+                auto [iter, success] = lifetimeMap.emplace(1, std::move(value));
+
+                REQUIRE(iter->second.value_ == 1);
+            }
+
+            Value::test();
+            CHECK(Value::numConstructs == 2);
+            CHECK(Value::numCopies == 0);
+            CHECK(Value::numMoves == 1);
+        }
+        SECTION("can copy-construct in emplace()")
+        {
+            {
+                auto lifetimeMap = TestType();
+                auto value = Value{ 1 };
+                auto [iter, success] = lifetimeMap.emplace(1, value);
+
+                REQUIRE(iter->second.value_ == 1);
+            }
+
+            Value::test();
+            CHECK(Value::numConstructs == 2);
+            CHECK(Value::numCopies == 1);
+            CHECK(Value::numMoves == 0);
+        }
     }
 }
 
