@@ -77,15 +77,15 @@ namespace test_helper
 
             if (constr)
             {
-                CHECK(numConstructs == constr);
+                CHECK(numConstructs == constr.value());
             }
             if (copies)
             {
-                CHECK(numCopies == copies);
+                CHECK(numCopies == copies.value());
             }
             if (moves)
             {
-                CHECK(numMoves == moves);
+                CHECK(numMoves == moves.value());
             }
         }
 
