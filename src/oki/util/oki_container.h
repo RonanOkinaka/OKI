@@ -55,6 +55,36 @@ namespace oki
             /*
              * Inserts a new key-value pair into the container.
              *
+             * Takes a key and variadic arguments to some type(s) that must be able
+             * to construct a mapped_type.
+             *
+             * Either inserts and returns an iterator to the newly inserted pair + a
+             * 'true' value, or returns an iterator the old pair and a 'false' value.
+             */
+            template <typename... Args>
+            std::pair<iterator, bool> emplace(Key key, Args&&... args)
+            {
+                // Equivalent behavior to find_key_maybe_max_() -> try to skip
+                // the binary search by checking the highly likely case that
+                // the key is maximal, but skips one extra branch this way
+                auto begin = data_.begin(), end = data_.end();
+                if (begin == end || data_.back().first < key)
+                {
+                    return {
+                        data_.emplace(data_.end(), key, std::forward<Args>(args)...),
+                        true
+                    };
+                }
+
+                return this->try_insert_impl_<false>(
+                    key,
+                    std::forward<Args>(args)...
+                );
+            }
+
+            /*
+             * Inserts a new key-value pair into the container.
+             *
              * Takes a key and a universal reference to some type that must be able
              * to construct a mapped_type.
              *
@@ -64,22 +94,7 @@ namespace oki
             template <typename InsertType>
             std::pair<iterator, bool> insert(Key key, InsertType&& value)
             {
-                // Equivalent behavior to find_key_maybe_max_() -> try to skip
-                // the binary search by checking the highly likely case that
-                // the key is maximal, but skips one extra branch this way
-                auto begin = data_.begin(), end = data_.end();
-                if (begin == end || data_.back().first < key)
-                {
-                    return {
-                        data_.emplace(data_.end(), key, std::forward<InsertType>(value)),
-                        true
-                    };
-                }
-
-                return this->try_insert_impl_<false>(
-                    key,
-                    std::forward<InsertType>(value)
-                );
+                return this->emplace(key, std::forward<InsertType>(value));
             }
 
             /*
@@ -101,6 +116,23 @@ namespace oki
             }
 
             /*
+             * Emplaces a key-value pair under the assumption that no item with
+             * that <key> already exists in the container. Does not check.
+             *
+             * Returns an iterator to the newly inserted pair.
+             */
+            template <typename... Args>
+            iterator emplace_unchecked(Key key, Args&&... args)
+            {
+                static_assert(std::is_constructible_v<Type, Args...>);
+
+                return data_.emplace(this->find_key_maybe_max_(key),
+                    key,
+                    std::forward<Args>(args)...
+                );
+            }
+
+            /*
              * Inserts a key-value pair under the assumption that no item with
              * that <key> already exists in the container. Does not check.
              *
@@ -109,12 +141,7 @@ namespace oki
             template <typename InsertType>
             iterator insert_unchecked(Key key, InsertType&& value)
             {
-                static_assert(std::is_constructible_v<Type, InsertType>);
-
-                return data_.emplace(this->find_key_maybe_max_(key),
-                    key,
-                    std::forward<InsertType>(value)
-                );
+                return this->emplace_unchecked(key, std::forward<InsertType>(value));
             }
 
             /*
@@ -228,10 +255,13 @@ namespace oki
                     && iter->first == key;
             }
 
-            template <bool ASSIGN, typename InsertType>
-            std::pair<iterator, bool> try_insert_impl_(Key key, InsertType&& value)
+            template <bool ASSIGN, typename Arg1, typename... Args>
+            std::pair<iterator, bool> try_insert_impl_(
+                Key key,
+                Arg1&& arg1,
+                Args&&... args)
             {
-                static_assert(std::is_constructible_v<Type, InsertType>);
+                static_assert(std::is_constructible_v<Type, Arg1, Args...>);
 
                 auto iter = this->find_key_(key);
                 if (this->check_key_iter_(key, iter))
@@ -239,8 +269,10 @@ namespace oki
                     // If we already have the key, DO NOT insert
                     if constexpr (ASSIGN)
                     {
-                        static_assert(std::is_assignable_v<Type, InsertType>);
-                        iter->second = std::forward<InsertType>(value);
+                        static_assert(sizeof...(Args) == 0);
+                        static_assert(std::is_assignable_v<Type, Arg1>);
+
+                        iter->second = std::forward<Arg1>(arg1);
                     }
 
                     return { iter, false };
@@ -248,7 +280,11 @@ namespace oki
 
                 // Otherwise, DO insert
                 return {
-                    data_.emplace(iter, key, std::forward<InsertType>(value)),
+                    data_.emplace(
+                        iter, key,
+                        std::forward<Arg1>(arg1),
+                        std::forward<Args>(args)...
+                    ),
                     true
                 };
             }
