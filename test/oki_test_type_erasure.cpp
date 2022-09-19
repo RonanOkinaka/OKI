@@ -7,6 +7,7 @@
 #include "catch2/catch_template_test_macros.hpp"
 
 #include <cstdint>
+#include <optional>
 #include <utility>
 
 using Value = test_helper::ObjHelper;
@@ -28,10 +29,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             REQUIRE(value.template get_as<Value>().value_ == 0);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 1);
-        CHECK(Value::numCopies == 0);
-        CHECK(Value::numMoves == 0);
+        Value::test(1, 0, 0);
     }
     SECTION("calls constructor on arguments")
     {
@@ -41,10 +39,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             REQUIRE(value.template get_as<Value>().value_ == 1);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 1);
-        CHECK(Value::numCopies == 0);
-        CHECK(Value::numMoves == 0);
+        Value::test(1, 0, 0);
     }
     SECTION("move constructs when same type is moved in")
     {
@@ -55,10 +50,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             REQUIRE(value.template get_as<Value>().value_ == init.value_);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 2);
-        CHECK(Value::numCopies == 0);
-        CHECK(Value::numMoves == 1);
+        Value::test(2, 0, 1);
     }
     SECTION("copy constructs when same type is copied in")
     {
@@ -69,10 +61,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             REQUIRE(value.template get_as<Value>().value_ == init.value_);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 2);
-        CHECK(Value::numCopies == 1);
-        CHECK(Value::numMoves == 0);
+        Value::test(2, 1, 0);
     }
     SECTION("copies and properly destructs after copy assignment")
     {
@@ -86,10 +75,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             REQUIRE(value2.template get_as<Value>().value_ == 2);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 2);
-        CHECK(Value::numCopies == 1);
-        CHECK(Value::numMoves == 0);
+        Value::test(2, 1, 0);
     }
     SECTION("moves and properly destructs after move assignment")
     {
@@ -102,9 +88,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             REQUIRE(value1.template get_as<Value>().value_ == 2);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 2);
-        CHECK(Value::numCopies == 0);
+        Value::test(2, 0, std::nullopt);
         CHECK(Value::numMoves <= 1); // Unbuffered simply swaps pointers
     }
     SECTION("moves and properly destructs after copy_from()")
@@ -118,10 +102,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             REQUIRE(value1.template get_as<Value>().value_ == 2);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 2);
-        CHECK(Value::numCopies == 1);
-        CHECK(Value::numMoves == 0);
+        Value::test(2, 1, 0);
     }
     SECTION("moves and properly destructs after move_from()")
     {
@@ -134,9 +115,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             REQUIRE(value1.template get_as<Value>().value_ == 2);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 2);
-        CHECK(Value::numCopies == 0);
+        Value::test(2, 0, std::nullopt);
         CHECK(Value::numMoves <= 1);
     }
     SECTION("properly destructs after copy self-assignment")
@@ -148,10 +127,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             CHECK(value.template get_as<Value>().value_ == 1);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 1);
-        CHECK(Value::numCopies == 1);
-        CHECK(Value::numMoves == 0);
+        Value::test(1, 1, 0);
     }
     SECTION("can assign rvalues with hold()")
     {
@@ -162,10 +138,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             CHECK(value.template get_as<Value>().value_ == 2);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 2);
-        CHECK(Value::numCopies == 0);
-        CHECK(Value::numMoves == 1);
+        Value::test(2, 0, 1);
     }
     SECTION("can move values with hold()")
     {
@@ -178,10 +151,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             CHECK(value.template get_as<Value>().value_ == 2);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 2);
-        CHECK(Value::numCopies == 0);
-        CHECK(Value::numMoves == 1);
+        Value::test(2, 0, 1);
     }
     SECTION("can copy values with hold()")
     {
@@ -193,9 +163,6 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             CHECK(value.template get_as<Value>().value_ == 2);
         }
 
-        Value::test();
-        CHECK(Value::numConstructs == 2);
-        CHECK(Value::numCopies == 1);
-        CHECK(Value::numMoves == 0);
+        Value::test(2, 1, 0);
     }
 }

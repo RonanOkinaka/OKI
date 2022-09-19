@@ -1,6 +1,7 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include <cstdint>
+#include <optional>
 
 namespace test_helper
 {
@@ -65,6 +66,27 @@ namespace test_helper
         static void test()
         {
             CHECK(numConstructs == numDestructs);
+        }
+
+        static void test(
+            std::optional<std::size_t> constr,
+            std::optional<std::size_t> copies,
+            std::optional<std::size_t> moves)
+        {
+            test_helper::ObjHelper::test();
+
+            if (constr)
+            {
+                CHECK(numConstructs == constr);
+            }
+            if (copies)
+            {
+                CHECK(numCopies == copies);
+            }
+            if (moves)
+            {
+                CHECK(numMoves == moves);
+            }
         }
 
         std::size_t value_;

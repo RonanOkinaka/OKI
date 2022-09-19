@@ -155,10 +155,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
                 REQUIRE(iter->second.value_ == 1);
             }
 
-            Value::test();
-            CHECK(Value::numConstructs == 1);
-            CHECK(Value::numCopies == 0);
-            CHECK(Value::numMoves == 0);
+            Value::test(1, 0, 0);
         }
         SECTION("can move-construct in emplace()")
         {
@@ -170,10 +167,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
                 REQUIRE(iter->second.value_ == 1);
             }
 
-            Value::test();
-            CHECK(Value::numConstructs == 2);
-            CHECK(Value::numCopies == 0);
-            CHECK(Value::numMoves == 1);
+            Value::test(2, 0, 1);
         }
         SECTION("can copy-construct in emplace()")
         {
@@ -185,10 +179,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
                 REQUIRE(iter->second.value_ == 1);
             }
 
-            Value::test();
-            CHECK(Value::numConstructs == 2);
-            CHECK(Value::numCopies == 1);
-            CHECK(Value::numMoves == 0);
+            Value::test(2, 1, 0);
         }
     }
 }
