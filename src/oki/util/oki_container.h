@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <iterator>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -71,14 +72,18 @@ namespace oki
                 if (begin == end || data_.back().first < key)
                 {
                     return {
-                        data_.emplace(data_.end(), key, std::forward<Args>(args)...),
+                        data_.emplace(data_.end(),
+                            std::piecewise_construct,
+                            std::tuple{ key },
+                            std::forward_as_tuple(std::forward<Args>(args)...)
+                        ),
                         true
                     };
                 }
 
                 return this->try_insert_impl_<false>(
                     key,
-                    std::forward<Args>(args)...
+                    std::forward_as_tuple(std::forward<Args>(args)...)
                 );
             }
 
@@ -111,7 +116,7 @@ namespace oki
             {
                 return this->try_insert_impl_<true>(
                     key,
-                    std::forward<InsertType>(value)
+                    std::forward_as_tuple(std::forward<InsertType>(value))
                 );
             }
 
@@ -255,13 +260,12 @@ namespace oki
                     && iter->first == key;
             }
 
-            template <bool ASSIGN, typename Arg1, typename... Args>
+            template <bool ASSIGN, typename... Args>
             std::pair<iterator, bool> try_insert_impl_(
                 Key key,
-                Arg1&& arg1,
-                Args&&... args)
+                std::tuple<Args...>&& args)
             {
-                static_assert(std::is_constructible_v<Type, Arg1, Args...>);
+                static_assert(std::is_constructible_v<Type, Args...>);
 
                 auto iter = this->find_key_(key);
                 if (this->check_key_iter_(key, iter))
@@ -269,10 +273,13 @@ namespace oki
                     // If we already have the key, DO NOT insert
                     if constexpr (ASSIGN)
                     {
-                        static_assert(sizeof...(Args) == 0);
-                        static_assert(std::is_assignable_v<Type, Arg1>);
+                        static_assert(sizeof...(Args) == 1);
+                        static_assert(std::is_assignable_v<
+                            Type,
+                            std::tuple_element_t<0, std::decay_t<decltype(args)>>
+                        >);
 
-                        iter->second = std::forward<Arg1>(arg1);
+                        iter->second = std::get<0>(std::move(args));
                     }
 
                     return { iter, false };
@@ -280,10 +287,10 @@ namespace oki
 
                 // Otherwise, DO insert
                 return {
-                    data_.emplace(
-                        iter, key,
-                        std::forward<Arg1>(arg1),
-                        std::forward<Args>(args)...
+                    data_.emplace(iter,
+                        std::piecewise_construct,
+                        std::tuple{ key },
+                        std::move(args)
                     ),
                     true
                 };

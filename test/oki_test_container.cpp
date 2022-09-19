@@ -157,6 +157,17 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
 
             Value::test(1, 0, 0);
         }
+        SECTION("can default-construct in emplace()")
+        {
+            {
+                auto lifetimeMap = TestType();
+                auto [iter, success] = lifetimeMap.emplace(1);
+
+                REQUIRE(iter->second.value_ == 0);
+            }
+
+            Value::test(1, 0, 0);
+        }
         SECTION("can move-construct in emplace()")
         {
             {
@@ -180,6 +191,34 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
             }
 
             Value::test(2, 1, 0);
+        }
+        SECTION("can copy-assign in insert_or_assign()")
+        {
+            {
+                auto lifetimeMap = TestType();
+                auto value = Value{ 1 };
+                lifetimeMap.emplace(1);
+
+                auto [iter, success] = lifetimeMap.insert_or_assign(1, value);
+
+                REQUIRE(iter->second.value_ == 1);
+            }
+
+            Value::test(2, 1, 0);
+        }
+        SECTION("can move-assign in insert_or_assign()")
+        {
+            {
+                auto lifetimeMap = TestType();
+                auto value = Value{ 1 };
+                lifetimeMap.emplace(1);
+
+                auto [iter, success] = lifetimeMap.insert_or_assign(1, std::move(value));
+
+                REQUIRE(iter->second.value_ == 1);
+            }
+
+            Value::test(2, 0, 1);
         }
     }
 }
