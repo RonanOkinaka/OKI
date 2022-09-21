@@ -275,7 +275,7 @@ namespace oki
                     {
                         static_assert(sizeof...(Args) == 1);
                         static_assert(std::is_assignable_v<
-                            Type,
+                            Type&,
                             std::tuple_element_t<0, std::decay_t<decltype(args)>>
                         >);
 

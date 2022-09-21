@@ -1,6 +1,9 @@
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <memory>
+#include <typeinfo>
+#include <typeindex>
 #include <type_traits>
 #include <utility>
 
@@ -259,5 +262,64 @@ namespace oki
 
         template <typename Type>
         using OptimalErasedType = ErasedType<sizeof(Type), alignof(Type)>;
+
+        /*
+         * An opaque class representing a type index for an associative map.
+         * It is worth using this instead of std::type_index directly because
+         * this can easily be replaced with a different mechanism (like some
+         * pointer to a static template variable, for instance).
+         */
+        class TypeIndex
+        {
+        public:
+            std::size_t hash() const
+            {
+                return std::hash<std::type_index>{ }(idx_);
+            }
+
+            bool operator==(const TypeIndex& that) const
+            {
+                return idx_ == that.idx_;
+            }
+
+            bool operator<(const TypeIndex& that) const
+            {
+                return idx_ < that.idx_;
+            }
+
+        private:
+            using IndexType = std::type_index;
+            IndexType idx_;
+
+            explicit TypeIndex(IndexType idx)
+                : idx_(idx) { }
+
+            template <typename T>
+            friend TypeIndex get_type();
+        };
+
+        template <typename Type>
+        oki::intl_::TypeIndex get_type()
+        {
+            return oki::intl_::TypeIndex{ typeid(std::decay_t<Type>) };
+        }
+
+        template <typename Type>
+        oki::intl_::TypeIndex get_type(Type&& _)
+        {
+            return oki::intl_::get_type<std::decay_t<Type>>();
+        }
     }
+}
+
+namespace std
+{
+    template <>
+    struct hash<oki::intl_::TypeIndex>
+    {
+        std::size_t operator()(const oki::intl_::TypeIndex& type) const
+        {
+            return type.hash();
+        }
+    };
 }
