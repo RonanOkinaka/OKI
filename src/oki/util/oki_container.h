@@ -342,6 +342,11 @@ namespace oki
         {
             namespace helper = oki::intl_::helper_;
 
+            if (((iterPairs.first == iterPairs.second) || ...))
+            {
+                return func;
+            }
+
             // This is essentially the merge join algorithm, optimized for cache-coherence
             auto max = helper::get_first_key(iterPairs...);
             while (true)
