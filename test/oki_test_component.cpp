@@ -276,6 +276,71 @@ TEST_CASE("ComponentManager")
             REQUIRE(false);
         });
     }
+    SECTION("can (re)use a view to iterate over components")
+    {
+        auto intView = compMan.get_component_view<int>();
+
+        // Should do nothing
+        intView.for_each([](oki::Entity entity, int i) {
+            REQUIRE(false);
+        });
+
+        // Should call on the first entity
+        compMan.bind_component(entity, 1);
+        intView.for_each([](oki::Entity, int i) {
+            REQUIRE(i == 1);
+        });
+
+        // Should call on both
+        compMan.bind_component(compMan.create_entity(), 2);
+        std::set<int> values;
+        intView.for_each([&](oki::Entity, int i) {
+            values.insert(i);
+        });
+
+        int expectedVals[2] = { 1, 2 };
+        REQUIRE(std::equal(values.begin(), values.end(), expectedVals));
+
+        // Should do nothing, again
+        compMan.erase_components<int>();
+        intView.for_each([](oki::Entity, int i) {
+            REQUIRE(false);
+        });
+    }
+    SECTION("can iterate over several components in a view")
+    {
+        auto e1 = compMan.create_entity();
+        auto e2 = compMan.create_entity();
+        auto e3 = compMan.create_entity();
+        auto e4 = compMan.create_entity();
+
+        compMan.bind_component(e1, 1);
+        compMan.bind_component(e1, 1.f);
+        compMan.bind_component(e1, '1');
+
+        compMan.bind_component(e2, 2);
+        compMan.bind_component(e2, '2');
+
+        compMan.bind_component(e3, 3.f);
+        compMan.bind_component(e3, '3');
+
+        compMan.bind_component(e4, 4);
+        compMan.bind_component(e4, 4.f);
+        compMan.bind_component(e4, '4');
+
+        auto view = compMan.get_component_view<int, float, char>();
+
+        {
+            std::set<int> values;
+            view.for_each([&](auto ent, int i, auto...) {
+                values.insert(i);
+            });
+
+            int expectedVals[2] = { 1, 4 };
+            REQUIRE(values.size() == 2);
+            REQUIRE(std::equal(values.begin(), values.end(), expectedVals));
+        }
+    }
     SECTION("reserve_components() does not increase num_components()")
     {
         compMan.reserve_components<int>(10);

@@ -36,6 +36,16 @@ namespace oki
      */
     class ComponentManager
     {
+        using HandleType = oki::Entity::HandleType;
+
+        template <typename Type>
+        using Container = oki::intl_::AssocSortedVector<
+            HandleType,
+            std::decay_t<Type>
+        >;
+
+        using ErasedContainer = oki::intl_::OptimalErasedType<Container<long>>;
+
     public:
         ComponentManager() = default;
         ComponentManager(const ComponentManager&) = default;
@@ -201,6 +211,8 @@ namespace oki
 
         /*
          * Erases all components.
+         *
+         * Invalidates any views received from get_component_view().
          */
         void erase_components()
         {
@@ -332,17 +344,55 @@ namespace oki
             }, 0);
         }
 
+        template <typename... Types>
+        class ComponentView
+        {
+        public:
+            ComponentView(const ComponentView&) noexcept = default;
+            ComponentView(ComponentView&&) noexcept = default;
+            ~ComponentView() noexcept = default;
+
+            template <typename Callback>
+            Callback for_each(Callback func)
+            {
+                std::apply([&](auto& cont, auto&... containers) {
+                    component_intersection_(func, cont, containers...);
+                }, containers_);
+
+                return func;
+            }
+
+        private:
+            std::tuple<Container<Types>&...> containers_;
+
+            ComponentView(std::tuple<Container<Types>&...> containers)
+                : containers_(containers) { }
+
+            friend class oki::ComponentManager;
+        };
+
+        /*
+         * Get a reusable way to iterate over a set of components. It is
+         * designed to amortize the cost, so allocates and locates all
+         * relevant containers upfront, and should perform better than
+         * for_each() for each subsequent use.
+         *
+         * The returned object is unchecked and is only valid if:
+         *  - The object it came from is still alive and in the same location
+         *  - erase_components() [the non-template version] has not been called
+         */
+        template <typename... Types>
+        ComponentView<Types...> get_component_view()
+        {
+            auto& c = this->get_or_create_cont_<int>();
+
+            // std::unordered_map does not invalidate references so this is ok
+            return ComponentView<Types...>(
+                std::tie(this->get_or_create_cont_<Types>()...)
+            );
+        }
+
     private:
-        using HandleType = oki::Entity::HandleType;
-
-        template <typename Type>
-        using Container = oki::intl_::AssocSortedVector<
-            HandleType,
-            std::decay_t<Type>
-        >;
-
-        using ErasedContainer = oki::intl_::OptimalErasedType<Container<long>>;
-
         std::unordered_map<
             oki::intl_::TypeIndex,
             ErasedContainer
