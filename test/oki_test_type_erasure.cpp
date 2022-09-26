@@ -7,6 +7,7 @@
 #include "catch2/catch_template_test_macros.hpp"
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <utility>
 
@@ -21,9 +22,6 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
     SECTION("default constructs when no arguments are provided")
     {
         {
-            // The ugly template specifier is only required because
-            // TestType is a template as well, and won't be necessary
-            // in general use
             auto value = TestType::template erase_type<Value>();
 
             REQUIRE(value.template get_as<Value>().value_ == 0);
@@ -164,5 +162,42 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
         }
 
         Value::test(2, 1, 0);
+    }
+    SECTION("can be copy-constructed")
+    {
+        {
+            auto value = TestType::template erase_type<Value>(1u);
+            auto value2 = value;
+
+            CHECK(value2.template get_as<Value>().value_ == 1);
+        }
+
+        Value::test(2, 1, 0);
+    }
+    SECTION("can be move-constructed")
+    {
+        {
+            auto value = TestType::template erase_type<Value>(1u);
+            auto value2 = std::move(value);
+
+            CHECK(value2.template get_as<Value>().value_ == 1);
+        }
+
+        Value::test(2, 0, 1);
+    }
+    SECTION("can hold a move-only type")
+    {
+        // This basically just needs to compile
+        using MoveType = std::unique_ptr<Value>;
+        using TestType2 = oki::intl_::OptimalErasedType<MoveType>;
+
+        {
+            auto value = TestType2::template erase_type<MoveType>(new Value{ 1u });
+
+            auto ptr = value.template get_as<MoveType>().get();
+            CHECK((ptr && ptr->value_ == 1));
+        }
+
+        Value::test(1, 0, 0);
     }
 }
