@@ -30,9 +30,24 @@ namespace oki
         public:
             // Move-only: Two generators with same state can only be trouble
             constexpr LinearHandleGenerator() noexcept = default;
-            LinearHandleGenerator(const LinearHandleGenerator<HandleType>&) noexcept = delete;
-            constexpr LinearHandleGenerator(LinearHandleGenerator<HandleType>&&) noexcept = default;
+
+            LinearHandleGenerator(
+                const LinearHandleGenerator<HandleType>&
+            ) = delete;
+
+            constexpr LinearHandleGenerator(
+                LinearHandleGenerator<HandleType>&&
+            ) noexcept = default;
+
             ~LinearHandleGenerator() noexcept = default;
+
+            LinearHandleGenerator<HandleType>& operator=(
+                const LinearHandleGenerator<HandleType>&
+            ) = delete;
+
+            LinearHandleGenerator<HandleType>& operator=(
+                LinearHandleGenerator<HandleType>&&
+            ) = default;
 
             // Consumes the next handle value
             constexpr HandleType create_handle() noexcept
@@ -42,18 +57,21 @@ namespace oki
 
             /*
              * Semantically, signifies that this Handle will no longer be used.
-             * Returns a bool explaining whether the Handle was deleted without error
-             * (which is always true for this class).
+             * Returns a bool explaining whether the Handle was deleted without
+             * error (which is always true for this class).
              */
             constexpr bool destroy_handle(const HandleType handle) noexcept
             {
                 return true;
             }
 
-            // Returns the generator's state to one equivalent to immediately after initialization
+            /*
+             * Returns the generator's state to one equivalent to immediately
+             * after initialization
+             */
             constexpr void reset() noexcept
             {
-                counter_ = oki::intl_::get_first_valid_handle();
+                counter_ = oki::intl_::get_first_valid_handle<HandleType>();
             }
 
             /*
@@ -69,7 +87,7 @@ namespace oki
             }
 
         private:
-            HandleType counter_ = oki::intl_::get_first_valid_handle();
+            HandleType counter_ = oki::intl_::get_first_valid_handle<HandleType>();
         };
 
         /*
@@ -88,10 +106,25 @@ namespace oki
         {
         public:
             // Move-only: Two generators with same state can only be trouble
-            DebugHandleGenerator() = default;
-            DebugHandleGenerator(const DebugHandleGenerator<HandleType>&) = delete;
-            DebugHandleGenerator(DebugHandleGenerator<HandleType>&&) = default;
+            DebugHandleGenerator() noexcept = default;
+
+            DebugHandleGenerator(
+                const DebugHandleGenerator<HandleType>&
+            ) = delete;
+
+            DebugHandleGenerator(
+                DebugHandleGenerator<HandleType>&&
+            ) noexcept = default;
+
             ~DebugHandleGenerator() noexcept = default;
+
+            DebugHandleGenerator<HandleType>& operator=(
+                const DebugHandleGenerator<HandleType>&
+            ) = delete;
+
+            DebugHandleGenerator<HandleType>& operator=(
+                DebugHandleGenerator<HandleType>&&
+            ) noexcept = default;
 
             // Consumes the next handle value
             constexpr HandleType create_handle() noexcept
@@ -111,7 +144,10 @@ namespace oki
                     && invalidHandles_.insert(handle).second;
             }
 
-            // Returns the generator's state to one equivalent to immediately after initialization
+            /*
+             * Returns the generator's state to one equivalent to immediately
+             * after initialization
+             */
             void reset() noexcept
             {
                 handleGen_.reset();
@@ -150,10 +186,26 @@ namespace oki
         {
         public:
             ReuseHandleGenerator() = default;
-            ReuseHandleGenerator(const ReuseHandleGenerator<HandleType>&) noexcept = delete;
-            ReuseHandleGenerator(ReuseHandleGenerator<HandleType>&&) noexcept = default;
+
+            ReuseHandleGenerator(
+                const ReuseHandleGenerator<HandleType>&
+            ) = delete;
+
+            ReuseHandleGenerator(
+                ReuseHandleGenerator<HandleType>&&
+            ) noexcept = default;
+
             ~ReuseHandleGenerator() noexcept = default;
 
+            ReuseHandleGenerator<HandleType>& operator=(
+                const ReuseHandleGenerator<HandleType>&
+            ) = delete;
+
+            ReuseHandleGenerator<HandleType>& operator=(
+                ReuseHandleGenerator<HandleType>&&
+            ) noexcept = default;
+
+            // Consumes the next handle value
             HandleType create_handle() noexcept
             {
                 if (!deletedHandles_.empty())
@@ -168,7 +220,9 @@ namespace oki
             }
 
             /*
-             * Returns true if destruction was successful (so the handle can be reused later).
+             * Returns true if destruction was successful (so the handle can be
+             * reused later).
+             *
              * Returns false if there was an exception thrown when attempting to destroy.
              */
             bool destroy_handle(const HandleType handle) noexcept
@@ -179,14 +233,19 @@ namespace oki
                 }
                 catch (...)
                 {
-                    // Because this is not the debug generator, it's better to just leak 
-                    // the handle than to allow the exception to propagate
+                    // Because this is not the debug generator, it's better to
+                    // just leak the handle than to allow the exception
+                    // to propagate
                     return false;
                 }
 
                 return true;
             }
 
+            /*
+             * Returns the generator's state to one equivalent to immediately
+             * after initialization
+             */
             void reset() noexcept
             {
                 deletedHandles_.clear();
