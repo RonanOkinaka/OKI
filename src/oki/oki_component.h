@@ -1,3 +1,6 @@
+#ifndef OKI_COMPONENT_H
+#define OKI_COMPONENT_H
+
 #include "oki/oki_handle.h"
 #include "oki/util/oki_container.h"
 #include "oki/util/oki_handle_gen.h"
@@ -503,3 +506,5 @@ namespace oki
         }
     };
 }
+
+#endif // OKI_COMPONENT_H
