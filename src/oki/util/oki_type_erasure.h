@@ -1,3 +1,6 @@
+#ifndef OKI_TYPE_ERASURE_H
+#define OKI_TYPE_ERASURE_H
+
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -454,3 +457,5 @@ namespace std
         }
     };
 }
+
+#endif // OKI_TYPE_ERASURE_H
