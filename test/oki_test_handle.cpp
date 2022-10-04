@@ -32,7 +32,10 @@ TEMPLATE_TEST_CASE("All handle generators", "[logic][ecs][handle]",
 
     SECTION("generates valid handles")
     {
-        REQUIRE(std::none_of(handles.begin(), handles.end(), oki::intl_::is_bad_handle));
+        REQUIRE(std::none_of(
+            handles.begin(), handles.end(),
+            oki::intl_::is_bad_handle<>
+        ));
     }
     SECTION("generates distinct handles")
     {
@@ -40,7 +43,9 @@ TEMPLATE_TEST_CASE("All handle generators", "[logic][ecs][handle]",
     }
     SECTION("correctly verifies the invalid handle constant")
     {
-        REQUIRE_FALSE(handleGen.verify_handle(oki::intl_::get_invalid_handle_constant()));
+        REQUIRE_FALSE(
+            handleGen.verify_handle(oki::intl_::get_invalid_handle_constant<>())
+        );
     }
 }
 
@@ -79,7 +84,7 @@ TEMPLATE_TEST_CASE("OKI handle generators", "[logic][ecs][handle]",
     SECTION("returns generation state to default on reset")
     {
         handleGen.reset();
-        REQUIRE(handleGen.create_handle() == oki::intl_::get_first_valid_handle());
+        REQUIRE(handleGen.create_handle() == oki::intl_::get_first_valid_handle<>());
     }
     SECTION("returns verification state to default on reset")
     {
