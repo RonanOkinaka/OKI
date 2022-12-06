@@ -18,6 +18,7 @@ add_executable(oki_unit
     oki_test_type_erasure.cpp
     oki_test_component.cpp
     oki_test_observer.cpp
+    oki_test_system.cpp
 )
 target_include_directories(oki_unit PRIVATE "../src/")
 target_link_libraries(oki_unit PRIVATE Catch2::Catch2WithMain)
