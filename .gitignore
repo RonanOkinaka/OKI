@@ -10,6 +10,8 @@
 !src/**/*.cpp
 !test/*.h
 !test/*.cpp
+!examples/*.h
+!examples/*.cpp
 
 #   other useful things
 !.gitignore
