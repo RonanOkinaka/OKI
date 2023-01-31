@@ -22,7 +22,8 @@ namespace oki
          *
          * Its performance characteristics are as follows:
          *   - Fast, cache-local iteration
-         *   - Slow O(n) insertion [but amortized O(1) for keys that only increase!]
+         *   - Slow O(n) insertion [though with opportunities for optimization
+         *       like O(log n) and sometimes O(1) amortized insertions]
          *   - Moderate O(log n) retrieval [though this can be optimized with a
          *       reverse index as is done in entt's sparse_set]
          *
@@ -131,10 +132,22 @@ namespace oki
             {
                 static_assert(std::is_constructible_v<Type, Args...>);
 
-                return data_.emplace(this->find_key_maybe_max_(key),
-                    key,
-                    std::forward<Args>(args)...
+                // Push new pair to back then rotate it into place
+                data_.emplace_back(
+                    std::piecewise_construct,
+                    std::tuple{ key },
+                    std::forward_as_tuple(std::forward<Args>(args)...)
                 );
+
+                auto prev = data_.rbegin();
+                auto newPair = prev++;
+                while (prev != data_.rend() && !(prev->first < key))
+                {
+                    std::swap(*prev++, *newPair++);
+                }
+
+                // base() returns the iterator AFTER itself (which is newPair)
+                return prev.base();
             }
 
             /*
