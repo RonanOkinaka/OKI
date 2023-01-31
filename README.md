@@ -20,7 +20,7 @@ At the moment, this "library" is header-only (due in large part to the heavy use
 So, building is easy: `#include "oki/oki_ecs.h"`, use the library, then compile your code.
 
 There are a set of tests using `catch2`, which `CMake` will download and install automatically. So, the steps are similarly simple:
-- `cd test`
-- `cmake .`
+- `cmake -S . -B build`
+- `cd build`
 - `cmake --build .`
-- `./oki_unit`
+- `ctest`
