@@ -5,11 +5,19 @@
 #include "GLFW/glfw3.h"
 #include "oki/oki_ecs.h"
 
+#include <initializer_list>
 #include <random>
+#include <vector>
 
 struct Rect
 {
     float x1, x2, y1, y2;
+
+    bool overlaps(const Rect& r2) const noexcept
+    {
+        return (x1 <= r2.x2) && (y1 <= r2.y2)
+            && (r2.x1 <= x2) && (r2.y1 <= y2);
+    }
 };
 
 struct PhysicsVec
@@ -23,6 +31,11 @@ struct Color
 };
 
 struct PipeTag { };
+
+struct GameOverEvent
+{
+    oki::Engine& engine;
+};
 
 class SimpleRenderer
     : public oki::EngineSystem<SimpleRenderer>
@@ -82,7 +95,7 @@ private:
         auto now = std::chrono::steady_clock::now();
         if (pipeSpawn_.count() > 2.f)
         {
-            this->create_pipe(engine);
+            this->create_pipe_(engine);
         }
 
         std::vector<oki::Entity> toDelete;
@@ -103,7 +116,7 @@ private:
         }
     }
 
-    void create_pipe(oki::Engine& engine)
+    void create_pipe_(oki::Engine& engine)
     {
         std::uniform_real_distribution<float> heightGen{ -0.4, 0.2 };
         float height = heightGen(randSrc_);
@@ -138,13 +151,14 @@ private:
 
 class BirdSystem
     : public oki::SimpleEngineSystem
+    , public oki::Observer<GameOverEvent>
 {
 public:
     BirdSystem(oki::Entity bird, ext::Window& window)
         : window_(window), bird_(bird) { }
 
 private:
-    void step(oki::Engine& engine, oki::SystemOptions&) override
+    void step(oki::Engine& engine, oki::SystemOptions& opts) override
     {
         auto [rect, phys] = engine.get_components<Rect, PhysicsVec>(bird_);
 
@@ -153,6 +167,20 @@ private:
             input_.start();
             phys.velY = 0.5f;
         }
+
+        engine.for_each<PipeTag, Rect>([&rect, &engine](auto, auto, auto pipeRect) {
+            if (pipeRect.overlaps(rect))
+            {
+                engine.send(GameOverEvent{ engine });
+            }
+        });
+    }
+
+    void observe(GameOverEvent event, oki::ObserverOptions& opts) override
+    {
+        event.engine.get_component<Color>(bird_) = { 1.0, 0.0, 0.0 };
+
+        opts.disconnect();
     }
 
     ext::Window& window_;
@@ -162,12 +190,33 @@ private:
     ext::StopWatch input_;
 };
 
+class RemoveOnGameOver
+    : public oki::Observer<GameOverEvent>
+{
+public:
+    RemoveOnGameOver(std::initializer_list<oki::Handle>&& handles)
+        : systems_(handles) { }
+
+private:
+    std::vector<oki::Handle> systems_;
+
+    void observe(GameOverEvent event, oki::ObserverOptions& opts) override
+    {
+        for (auto system : systems_)
+        {
+            event.engine.remove_system(system);
+        }
+
+        opts.disconnect();
+    }
+};
+
 int main()
 {
     oki::Engine engine;
 
     auto bird = engine.create_entity();
-    engine.bind_component(bird, Rect{ -0.23, -0.27, -0.02, 0.02 });
+    engine.bind_component(bird, Rect{ -0.27, -0.23, -0.02, 0.02 });
     engine.bind_component(bird, Color{ 1., 0.5, 0.12 });
     engine.bind_component(bird, PhysicsVec{ 0., 0., 0., -0.7 });
 
@@ -183,13 +232,17 @@ int main()
     engine.add_system(renderer);
 
     PhysicsSystem physics;
-    engine.add_system(physics);
+    auto physHandle = engine.add_system(physics);
 
     PipeSystem pSystem;
-    engine.add_system(pSystem);
+    auto pipeHandle = engine.add_system(pSystem);
 
     BirdSystem bSystem{ bird, window };
-    engine.add_system(bSystem);
+    auto birdHandle = engine.add_system(bSystem);
+    engine.connect<GameOverEvent>(bSystem);
+
+    RemoveOnGameOver remover{ physHandle, pipeHandle, birdHandle };
+    engine.connect<GameOverEvent>(remover);
 
     return engine.run();
 }

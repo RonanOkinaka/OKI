@@ -1,9 +1,7 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.19)
 include(FetchContent)
 
-project(flappy LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 17)
-
+# Fetch GLFW
 FetchContent_Declare(
     glfw
     GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -14,6 +12,7 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glfw)
 
+# TODO: There's probably a better way than this
 find_package(OpenGL REQUIRED)
 
 add_executable(flappy flappy_bird.cpp)

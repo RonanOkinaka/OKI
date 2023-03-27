@@ -45,6 +45,7 @@ namespace ext
 
             if (glfwWindowShouldClose(window_))
             {
+                // Similarly, good design would emit an exit signal
                 opts.exit(0);
                 return;
             }
