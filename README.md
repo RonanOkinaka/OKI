@@ -24,3 +24,5 @@ There are a set of tests using `catch2`, which `CMake` will download and install
 - `cd build`
 - `cmake --build .`
 - `ctest`
+
+This will also build the example binary, `build/examples/flappy.exe`. The source for this (poor) implementation of Flappy Bird is located in the `examples` subdirectory. It is designed to demonstrate some features of the library.
