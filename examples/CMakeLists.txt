@@ -15,7 +15,13 @@ FetchContent_MakeAvailable(glfw)
 # TODO: There's probably a better way than this
 find_package(OpenGL REQUIRED)
 
+# Declare the final binary
 add_executable(flappy flappy_bird.cpp)
-target_include_directories(flappy PRIVATE "../src/")
 
+# Build dependencies
+target_include_directories(flappy PRIVATE "../src/")
 target_link_libraries(flappy PRIVATE glfw ${OPENGL_LIBRARIES})
+
+# Compiler features
+target_compile_features(flappy PRIVATE cxx_std_17)
+set_target_properties(flappy PROPERTIES CXX_EXTENSIONS OFF)
