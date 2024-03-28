@@ -106,7 +106,7 @@ namespace oki
         {
         public:
             // Move-only: Two generators with same state can only be trouble
-            DebugHandleGenerator() noexcept = default;
+            DebugHandleGenerator() = default;
 
             DebugHandleGenerator(
                 const DebugHandleGenerator<HandleType>&

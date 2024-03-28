@@ -66,7 +66,7 @@ namespace oki
     class SubjectPipe
     {
     public:
-        SubjectPipe() noexcept = default;
+        SubjectPipe() = default;
         SubjectPipe(const SubjectPipe&) = delete;
         SubjectPipe(SubjectPipe&&) = default;
         ~SubjectPipe() = default;
@@ -167,7 +167,7 @@ namespace oki
     class SignalManager
     {
     public:
-        SignalManager() noexcept = default;
+        SignalManager() = default;
         SignalManager(const SignalManager&) = delete;
         SignalManager(SignalManager&&) = default;
         ~SignalManager() = default;
