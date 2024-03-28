@@ -37,8 +37,7 @@ namespace ext
                 TimePoint late = Clock::now())
             {
                 using std::chrono::duration_cast;
-                using typename std::chrono::duration;
-                using DurationTarget = duration<Type, Ratio>;
+                using DurationTarget = std::chrono::duration<Type, Ratio>;
 
                 return duration_cast<DurationTarget>(late - early).count();
             }
