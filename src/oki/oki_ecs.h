@@ -7,42 +7,34 @@
 
 #include <type_traits>
 
-namespace oki
+namespace oki {
+class Engine : public oki::ComponentManager,
+               public oki::SignalManager,
+               public oki::SystemManager
+{ };
+
+template <typename ChildClass = void>
+class EngineSystem : public oki::System
 {
-    class Engine
-        : public oki::ComponentManager
-        , public oki::SignalManager
-        , public oki::SystemManager { };
+public:
+    virtual ~EngineSystem() = default;
 
-    template <typename ChildClass = void>
-    class EngineSystem
-        : public oki::System
+    virtual void step(oki::Engine&, oki::SystemOptions&) = 0;
+
+private:
+    void step(oki::SystemManager& manager, oki::SystemOptions& opts) override
     {
-    public:
-        virtual ~EngineSystem() = default;
-
-        virtual void step(oki::Engine&, oki::SystemOptions&) = 0;
-
-    private:
-        void step(oki::SystemManager& manager, oki::SystemOptions& opts)
-            override
-        {
-            // Optional CRTP
-            if constexpr (std::is_base_of_v<EngineSystem, ChildClass>)
-            {
-                static_cast<ChildClass*>(this)->step(
-                    static_cast<oki::Engine&>(manager),
-                    opts
-                );
-            }
-            else
-            {
-                this->step(static_cast<oki::Engine&>(manager), opts);
-            }
+        // Optional CRTP
+        if constexpr (std::is_base_of_v<EngineSystem, ChildClass>) {
+            static_cast<ChildClass*>(this)->step(
+                static_cast<oki::Engine&>(manager), opts);
+        } else {
+            this->step(static_cast<oki::Engine&>(manager), opts);
         }
-    };
+    }
+};
 
-    using SimpleEngineSystem = oki::EngineSystem<>;
+using SimpleEngineSystem = oki::EngineSystem<>;
 }
 
 #endif // OKI_ECS_H

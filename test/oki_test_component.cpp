@@ -7,8 +7,8 @@
 #include <cstdint>
 #include <functional>
 #include <optional>
-#include <string>
 #include <set>
+#include <string>
 
 using Value = test_helper::ObjHelper;
 using TestType = oki::ComponentManager;
@@ -47,7 +47,8 @@ TEST_CASE("ComponentManager")
 
         CHECK(compMan.get_component<int>(entity) == 2);
     }
-    SECTION("can update component with reference from bind_component_unchecked()")
+    SECTION(
+        "can update component with reference from bind_component_unchecked()")
     {
         compMan.bind_component(entity, 0);
 
@@ -80,7 +81,7 @@ TEST_CASE("ComponentManager")
     {
         compMan.bind_component(entity, 0);
         compMan.bind_component(entity, 1.5f);
-        compMan.bind_component(entity, std::string{ "wowie" });
+        compMan.bind_component(entity, std::string { "wowie" });
 
         REQUIRE(compMan.get_component<int>(entity) == 0);
         REQUIRE(compMan.get_component<float>(entity) == 1.5);
@@ -107,11 +108,10 @@ TEST_CASE("ComponentManager")
     {
         compMan.bind_component(entity, 0);
         compMan.bind_component(entity, 1.5f);
-        compMan.bind_component(entity, std::string{ "wowie" });
+        compMan.bind_component(entity, std::string { "wowie" });
 
-        auto [i, f, s] = compMan.get_components<
-            int, float, std::string
-        >(entity);
+        auto [i, f, s]
+            = compMan.get_components<int, float, std::string>(entity);
 
         REQUIRE(i == 0);
         REQUIRE(f == 1.5f);
@@ -133,9 +133,9 @@ TEST_CASE("ComponentManager")
         compMan.bind_component(entity, 0);
         compMan.bind_component(entity, 1.5f);
 
-        auto [i, c, f, s] = compMan.get_components_checked<
-            int, char, float, std::string
-        >(entity);
+        auto [i, c, f, s]
+            = compMan.get_components_checked<int, char, float, std::string>(
+                entity);
 
         REQUIRE((i && *i == 0));
         REQUIRE_FALSE(c);
@@ -197,8 +197,7 @@ TEST_CASE("ComponentManager")
         constexpr unsigned NUM_VALS = 15;
 
         int expectedVals[NUM_VALS] = { 0 };
-        for (unsigned i = 0; i != NUM_VALS; ++i)
-        {
+        for (unsigned i = 0; i != NUM_VALS; ++i) {
             unsigned value = i * 2;
 
             compMan.bind_component(compMan.create_entity(), value);
@@ -213,9 +212,10 @@ TEST_CASE("ComponentManager")
 
         REQUIRE(std::equal(values.begin(), values.end(), expectedVals));
 
-        compMan.for_each<unsigned>([&](const oki::Entity ent, const unsigned val) {
-            REQUIRE(val == 0);
-        });
+        compMan.for_each<unsigned>(
+            [&](const oki::Entity ent, const unsigned val) {
+                REQUIRE(val == 0);
+            });
     }
     SECTION("can iterate over several component types")
     {
@@ -241,9 +241,8 @@ TEST_CASE("ComponentManager")
 
         {
             std::set<int> values;
-            compMan.for_each<int, float, char>([&](auto ent, int i, auto...) {
-                values.insert(i);
-            });
+            compMan.for_each<int, float, char>(
+                [&](auto ent, int i, auto...) { values.insert(i); });
 
             int expectedVals[2] = { 1, 4 };
             REQUIRE(values.size() == 2);
@@ -251,9 +250,8 @@ TEST_CASE("ComponentManager")
         }
         {
             std::set<int> values;
-            compMan.for_each<int, char>([&](auto ent, int i, auto...) {
-                values.insert(i);
-            });
+            compMan.for_each<int, char>(
+                [&](auto ent, int i, auto...) { values.insert(i); });
 
             int expectedVals[4] = { 1, 2, 4 };
             REQUIRE(values.size() == 3);
@@ -261,9 +259,8 @@ TEST_CASE("ComponentManager")
         }
         {
             std::set<unsigned long long> values;
-            compMan.for_each<unsigned long long>([&](auto ent, unsigned long long i) {
-                values.insert(i);
-            });
+            compMan.for_each<unsigned long long>(
+                [&](auto ent, unsigned long long i) { values.insert(i); });
 
             unsigned long long expectedVals[1] = { 3 };
             REQUIRE(std::equal(values.begin(), values.end(), expectedVals));
@@ -281,31 +278,23 @@ TEST_CASE("ComponentManager")
         auto intView = compMan.get_component_view<int>();
 
         // Should do nothing
-        intView.for_each([](oki::Entity entity, int i) {
-            REQUIRE(false);
-        });
+        intView.for_each([](oki::Entity entity, int i) { REQUIRE(false); });
 
         // Should call on the first entity
         compMan.bind_component(entity, 1);
-        intView.for_each([](oki::Entity, int i) {
-            REQUIRE(i == 1);
-        });
+        intView.for_each([](oki::Entity, int i) { REQUIRE(i == 1); });
 
         // Should call on both
         compMan.bind_component(compMan.create_entity(), 2);
         std::set<int> values;
-        intView.for_each([&](oki::Entity, int i) {
-            values.insert(i);
-        });
+        intView.for_each([&](oki::Entity, int i) { values.insert(i); });
 
         int expectedVals[2] = { 1, 2 };
         REQUIRE(std::equal(values.begin(), values.end(), expectedVals));
 
         // Should do nothing, again
         compMan.erase_components<int>();
-        intView.for_each([](oki::Entity, int i) {
-            REQUIRE(false);
-        });
+        intView.for_each([](oki::Entity, int i) { REQUIRE(false); });
     }
     SECTION("can iterate over several components in a view")
     {
@@ -332,9 +321,7 @@ TEST_CASE("ComponentManager")
 
         {
             std::set<int> values;
-            view.for_each([&](auto ent, int i, auto...) {
-                values.insert(i);
-            });
+            view.for_each([&](auto ent, int i, auto...) { values.insert(i); });
 
             int expectedVals[2] = { 1, 4 };
             REQUIRE(values.size() == 2);
@@ -365,9 +352,8 @@ TEST_CASE("ComponentManager")
     {
         Value::reset();
 
-        auto test_lifetime =
-        [](auto memFunc, std::size_t value, auto constr, auto copies, auto moves)
-        {
+        auto test_lifetime = [](auto memFunc, std::size_t value, auto constr,
+                                 auto copies, auto moves) {
             {
                 oki::ComponentManager tempCompMan;
                 auto ent = tempCompMan.create_entity();
@@ -382,61 +368,71 @@ TEST_CASE("ComponentManager")
 
         SECTION("can insert and retrieve components")
         {
-            test_lifetime([](TestType& manager, oki::Entity entity) {
-                CHECK(manager.bind_component(entity, Value{ 1 }).second);
-            }, 1, 2, 0, 1);
+            test_lifetime(
+                [](TestType& manager, oki::Entity entity) {
+                    CHECK(manager.bind_component(entity, Value { 1 }).second);
+                },
+                1, 2, 0, 1);
         }
         SECTION("can emplace components")
         {
-            test_lifetime([](TestType& manager, oki::Entity entity) {
-                CHECK(manager.emplace_component<Value>(entity, 1u).second);
-            }, 1, 1, 0, 0);
+            test_lifetime(
+                [](TestType& manager, oki::Entity entity) {
+                    CHECK(manager.emplace_component<Value>(entity, 1u).second);
+                },
+                1, 1, 0, 0);
         }
         SECTION("can default construct components")
         {
-            test_lifetime([](TestType& manager, oki::Entity entity) {
-                CHECK(manager.emplace_component<Value>(entity).second);
-            }, 0, 1, 0, 0);
+            test_lifetime(
+                [](TestType& manager, oki::Entity entity) {
+                    CHECK(manager.emplace_component<Value>(entity).second);
+                },
+                0, 1, 0, 0);
         }
         SECTION("can move insert components")
         {
-            test_lifetime([](TestType& manager, oki::Entity entity) {
-                Value value{ 1 };
-                manager.bind_component(entity, std::move(value));
-            }, 1, 2, 0, 1);
+            test_lifetime(
+                [](TestType& manager, oki::Entity entity) {
+                    Value value { 1 };
+                    manager.bind_component(entity, std::move(value));
+                },
+                1, 2, 0, 1);
         }
         SECTION("can copy insert components")
         {
-            test_lifetime([](TestType& manager, oki::Entity entity) {
-                Value value{ 1 };
-                manager.bind_component(entity, value);
-            }, 1, 2, 1, 0);
+            test_lifetime(
+                [](TestType& manager, oki::Entity entity) {
+                    Value value { 1 };
+                    manager.bind_component(entity, value);
+                },
+                1, 2, 1, 0);
         }
         SECTION("can move assign components")
         {
-            test_lifetime([](TestType& manager, oki::Entity entity) {
-                manager.emplace_component<Value>(entity);
-                auto [comp, success] = manager.bind_or_assign_component(
-                    entity,
-                    Value{ 1 }
-                );
+            test_lifetime(
+                [](TestType& manager, oki::Entity entity) {
+                    manager.emplace_component<Value>(entity);
+                    auto [comp, success]
+                        = manager.bind_or_assign_component(entity, Value { 1 });
 
-                CHECK_FALSE(success);
-            }, 1, 2, 0, 1);
+                    CHECK_FALSE(success);
+                },
+                1, 2, 0, 1);
         }
         SECTION("can copy assign components")
         {
-            test_lifetime([](TestType& manager, oki::Entity entity) {
-                manager.emplace_component<Value>(entity);
+            test_lifetime(
+                [](TestType& manager, oki::Entity entity) {
+                    manager.emplace_component<Value>(entity);
 
-                Value value{ 1 };
-                auto [comp, success] = manager.bind_or_assign_component(
-                    entity,
-                    value
-                );
+                    Value value { 1 };
+                    auto [comp, success]
+                        = manager.bind_or_assign_component(entity, value);
 
-                CHECK_FALSE(success);
-            }, 1, 2, 1, 0);
+                    CHECK_FALSE(success);
+                },
+                1, 2, 1, 0);
         }
         SECTION("calls destructor on removed components")
         {

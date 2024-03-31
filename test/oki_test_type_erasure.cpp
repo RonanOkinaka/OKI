@@ -1,10 +1,10 @@
-#include "oki/util/oki_type_erasure.h"
 #include "oki/oki_handle.h"
+#include "oki/util/oki_type_erasure.h"
 
 #include "oki_test_util.h"
 
-#include "catch2/catch_test_macros.hpp"
 #include "catch2/catch_template_test_macros.hpp"
+#include "catch2/catch_test_macros.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -131,7 +131,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
     {
         {
             auto value = TestType::template erase_type<Value>(1u);
-            value.template hold<Value>(Value{ 2 });
+            value.template hold<Value>(Value { 2 });
 
             CHECK(value.template get_as<Value>().value_ == 2);
         }
@@ -142,7 +142,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
     {
         {
             auto value = TestType::template erase_type<Value>(1u);
-            auto other = Value{ 2 };
+            auto other = Value { 2 };
 
             value.template hold<Value>(std::move(other));
 
@@ -155,7 +155,7 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
     {
         {
             auto value = TestType::template erase_type<Value>(1u);
-            Value other = Value{ 2 };
+            Value other = Value { 2 };
             value.template hold<Value>(other);
 
             CHECK(value.template get_as<Value>().value_ == 2);
@@ -192,7 +192,8 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
         using TestType2 = oki::intl_::OptimalErasedType<MoveType>;
 
         {
-            auto value = TestType2::template erase_type<MoveType>(new Value{ 1u });
+            auto value
+                = TestType2::template erase_type<MoveType>(new Value { 1u });
 
             auto ptr = value.template get_as<MoveType>().get();
             CHECK((ptr && ptr->value_ == 1));
