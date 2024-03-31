@@ -50,11 +50,6 @@ namespace oki
         using ErasedContainer = oki::intl_::OptimalErasedType<Container<long>>;
 
     public:
-        ComponentManager() = default;
-        ComponentManager(const ComponentManager&) = default;
-        ComponentManager(ComponentManager&&) = default;
-        ~ComponentManager() = default;
-
         /*
          * Creates and returns an entity with which one can add, remove
          * and retrieve components.

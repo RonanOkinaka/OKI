@@ -34,14 +34,6 @@ namespace oki
         class AssocSortedVector
         {
         public:
-            AssocSortedVector() noexcept = default;
-            AssocSortedVector(const AssocSortedVector&) = default;
-            AssocSortedVector(AssocSortedVector&&) noexcept = default;
-            ~AssocSortedVector() noexcept = default;
-
-            AssocSortedVector& operator=(const AssocSortedVector&) = default;
-            AssocSortedVector& operator=(AssocSortedVector&&) noexcept = default;
-
             using DataType = std::vector<std::pair<Key, Type>>;
             using key_type = Key;
             using mapped_type = Type;

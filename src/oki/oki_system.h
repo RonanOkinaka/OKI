@@ -113,7 +113,7 @@ namespace oki
     class SystemManager
     {
     public:
-        SystemManager() noexcept = default;
+        SystemManager() = default;
         SystemManager(const SystemManager&) = delete;
         SystemManager(SystemManager&&) = default;
         ~SystemManager() = default;
