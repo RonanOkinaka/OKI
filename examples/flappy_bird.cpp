@@ -1,7 +1,13 @@
 #include "stopwatch.h"
 #include "window.h"
 
+// Platform-dependent trickery
+#ifdef __APPLE__
+#include "OpenGL/gl.h"
+#else
 #include "GL/gl.h"
+#endif
+
 #include "GLFW/glfw3.h"
 #include "oki/oki_ecs.h"
 

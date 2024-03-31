@@ -26,3 +26,12 @@ There are a set of tests using `catch2`, which `CMake` will download and install
 - `ctest`
 
 This will also build the example binary, `build/examples/flappy.exe`. The source for this (poor) implementation of Flappy Bird is located in the `examples` subdirectory. It is designed to demonstrate some features of the library.
+
+Currently, this project has been successfully built on the following platforms:
+
+| Operating System        | Architecture | Compiler                             |
+| :----:                  | :----:       | :----:                               |
+| Windows 10              | x86-64       | g++11.2 (MinGW), VS 2022 (via NMake) |
+| Windows 10 WSL (Ubuntu) | x86-64       | g++11.4                              |
+| Linux Mint 21           | x86-64       | g++11.4                              |
+| MacOS 13.5              | ARM          | clang-15                             |
