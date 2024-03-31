@@ -17,6 +17,7 @@
 !.gitignore
 !CMakeLists.txt
 !README.md
+!.clang-format
 
 # DO ignore CMake-generated content
 _deps/
