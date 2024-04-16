@@ -5,8 +5,7 @@
 
 #include <vector>
 
-struct TestSystem
-    : public oki::System
+struct TestSystem : public oki::System
 {
     void step(oki::SystemManager& manager, oki::SystemOptions& opts) override
     {
@@ -37,9 +36,8 @@ TEST_CASE("SystemManager")
     SECTION("can add a functional system")
     {
         bool called = false;
-        auto funcSys = oki::create_functional_system([&](auto&...) {
-            called = true;
-        });
+        auto funcSys
+            = oki::create_functional_system([&](auto&...) { called = true; });
 
         sysMan.add_system(*funcSys);
         sysMan.step();
@@ -50,9 +48,8 @@ TEST_CASE("SystemManager")
     {
         std::vector<int> callOrder;
         auto titled_func_sys = [&callOrder](int title) {
-            return oki::create_functional_system([=, &callOrder](auto&...) {
-                callOrder.push_back(title);
-            });
+            return oki::create_functional_system(
+                [=, &callOrder](auto&...) { callOrder.push_back(title); });
         };
 
         std::unique_ptr<oki::System> systems[] = {
@@ -66,15 +63,15 @@ TEST_CASE("SystemManager")
         };
 
         sysMan.add_priority_system(10, *systems[0]);
-        sysMan.add_priority_system(5,  *systems[1]);
+        sysMan.add_priority_system(5, *systems[1]);
         sysMan.add_priority_system(15, *systems[2]);
         sysMan.add_priority_system(10, *systems[3]);
         sysMan.add_priority_system(10, *systems[4]);
-        sysMan.add_priority_system(1,  *systems[5]);
+        sysMan.add_priority_system(1, *systems[5]);
         sysMan.add_priority_system(20, *systems[6]);
 
         sysMan.step();
-        REQUIRE(callOrder == std::vector<int>{ 6, 2, 0, 3, 4, 1, 5 });
+        REQUIRE(callOrder == std::vector<int> { 6, 2, 0, 3, 4, 1, 5 });
     }
     SECTION("can remove a system")
     {
@@ -101,11 +98,11 @@ TEST_CASE("SystemManager")
     {
         unsigned int numCalls = 0;
         auto funcSys = oki::create_functional_system(
-        [&](oki::SystemManager& manager, oki::SystemOptions& opts) {
-            ++numCalls;
-            opts.remove_me();
-            manager.remove_system(handle);
-        });
+            [&](oki::SystemManager& manager, oki::SystemOptions& opts) {
+                ++numCalls;
+                opts.remove_me();
+                manager.remove_system(handle);
+            });
 
         sysMan.add_priority_system(20, *funcSys);
         sysMan.run();
@@ -116,9 +113,7 @@ TEST_CASE("SystemManager")
     SECTION("can exit from run()")
     {
         auto funcSys = oki::create_functional_system(
-        [](auto&, oki::SystemOptions& opts) {
-            opts.exit(1);
-        });
+            [](auto&, oki::SystemOptions& opts) { opts.exit(1); });
 
         sysMan.add_priority_system(20, *funcSys);
 
@@ -130,16 +125,15 @@ TEST_CASE("SystemManager")
         unsigned int counter = 0;
 
         auto funcSys = oki::create_functional_system(
-        [&](auto&, oki::SystemOptions& opts) {
-            if (counter == 5)
-            {
-                opts.exit();
-                return;
-            }
+            [&](auto&, oki::SystemOptions& opts) {
+                if (counter == 5) {
+                    opts.exit();
+                    return;
+                }
 
-            ++counter;
-            opts.skip_rest();
-        });
+                ++counter;
+                opts.skip_rest();
+            });
 
         sysMan.add_priority_system(20, *funcSys);
 

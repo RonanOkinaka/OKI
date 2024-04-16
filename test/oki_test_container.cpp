@@ -8,10 +8,10 @@
 #include <algorithm>
 #include <functional>
 #include <initializer_list>
+#include <map>
 #include <set>
 #include <string>
 #include <type_traits>
-#include <map>
 #include <utility>
 #include <vector>
 
@@ -20,8 +20,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
     oki::intl_::AssocSortedVector<oki::Handle, std::string> map;
     map.insert(2, "2");
 
-    auto test_insertion = [&map](auto memFunc, const std::string& funcName)
-    {
+    auto test_insertion = [&map](auto memFunc, const std::string& funcName) {
         SECTION("allows " + funcName + "() at front")
         {
             auto [iter, success] = memFunc(map, 1, "1");
@@ -50,17 +49,24 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         }
     };
 
-    test_insertion(std::mem_fn(&decltype(map)::emplace<const char*>), "emplace");
+    test_insertion(
+        std::mem_fn(&decltype(map)::emplace<const char*>), "emplace");
     test_insertion(std::mem_fn(&decltype(map)::insert<const char*>), "insert");
-    test_insertion(std::mem_fn(&decltype(map)::insert_or_assign<const char*>), "insert_or_assign");
-    test_insertion([](auto& map, auto key, auto& value) {
-        return std::make_pair(map.emplace_unchecked(key, value), true);
-    }, "emplace_unchecked");
-    test_insertion([](auto& map, auto key, auto& value) {
-        return std::make_pair(map.insert_unchecked(key, value), true);
-    }, "insert_unchecked");
+    test_insertion(std::mem_fn(&decltype(map)::insert_or_assign<const char*>),
+        "insert_or_assign");
+    test_insertion(
+        [](auto& map, auto key, auto& value) {
+            return std::make_pair(map.emplace_unchecked(key, value), true);
+        },
+        "emplace_unchecked");
+    test_insertion(
+        [](auto& map, auto key, auto& value) {
+            return std::make_pair(map.insert_unchecked(key, value), true);
+        },
+        "insert_unchecked");
 
-    SECTION("does not change values via insert(), returns current value instead")
+    SECTION(
+        "does not change values via insert(), returns current value instead")
     {
         auto [iter, success] = map.insert(2, "0");
 
@@ -115,8 +121,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         map.insert(3, "3");
 
         decltype(map)::key_type i = 1;
-        for (auto iter = map.begin(); iter != map.end(); ++iter, ++i)
-        {
+        for (auto iter = map.begin(); iter != map.end(); ++iter, ++i) {
             CHECK(iter->first == i);
             CHECK(iter->second == std::to_string(i));
         }
@@ -172,7 +177,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         {
             {
                 auto lifetimeMap = TestType();
-                auto value = Value{ 1 };
+                auto value = Value { 1 };
                 auto [iter, success] = lifetimeMap.emplace(1, std::move(value));
 
                 REQUIRE(iter->second.value_ == 1);
@@ -184,7 +189,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         {
             {
                 auto lifetimeMap = TestType();
-                auto value = Value{ 1 };
+                auto value = Value { 1 };
                 auto [iter, success] = lifetimeMap.emplace(1, value);
 
                 REQUIRE(iter->second.value_ == 1);
@@ -196,7 +201,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         {
             {
                 auto lifetimeMap = TestType();
-                auto value = Value{ 1 };
+                auto value = Value { 1 };
                 lifetimeMap.emplace(1);
 
                 auto [iter, success] = lifetimeMap.insert_or_assign(1, value);
@@ -210,10 +215,11 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         {
             {
                 auto lifetimeMap = TestType();
-                auto value = Value{ 1 };
+                auto value = Value { 1 };
                 lifetimeMap.emplace(1);
 
-                auto [iter, success] = lifetimeMap.insert_or_assign(1, std::move(value));
+                auto [iter, success]
+                    = lifetimeMap.insert_or_assign(1, std::move(value));
 
                 REQUIRE(iter->second.value_ == 1);
             }
@@ -223,48 +229,45 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
     }
 }
 
-namespace test_helper
+namespace test_helper {
+template <typename Type>
+class IntersectionHelper
 {
-    template <typename Type>
-    class IntersectionHelper
+public:
+    template <typename... Pairs>
+    void operator()(
+        const std::pair<oki::Handle, Type>& pair, const Pairs&... pairs)
     {
-    public:
-        template <typename... Pairs>
-        void operator()(const std::pair<oki::Handle, Type>& pair, const Pairs&... pairs)
-        {
-            CHECK(pair.first == pair.second);
-            CHECK(((pairs.first == pairs.second) && ...));
+        CHECK(pair.first == pair.second);
+        CHECK(((pairs.first == pairs.second) && ...));
 
-            values_.push_back(pair.second);
+        values_.push_back(pair.second);
+    }
+
+    template <typename... Maps>
+    void do_test(const std::vector<Type>& expected, const Maps&... maps)
+    {
+        auto me = oki::intl_::variadic_set_intersection(
+            *this, std::make_pair(maps.cbegin(), maps.cend())...);
+
+        CHECK(expected == me.values_);
+    }
+
+    static auto create_map(std::initializer_list<Type> values)
+    {
+        static_assert(std::is_integral_v<Type>);
+        oki::intl_::AssocSortedVector<oki::Handle, Type> map;
+
+        for (auto value : values) {
+            map.insert(value, value);
         }
 
-        template <typename... Maps>
-        void do_test(const std::vector<Type>& expected, const Maps&... maps)
-        {
-            auto me = oki::intl_::variadic_set_intersection(
-                *this,
-                std::make_pair(maps.cbegin(), maps.cend())...
-            );
+        return map;
+    }
 
-            CHECK(expected == me.values_);
-        }
-
-        static auto create_map(std::initializer_list<Type> values)
-        {
-            static_assert(std::is_integral_v<Type>);
-            oki::intl_::AssocSortedVector<oki::Handle, Type> map;
-
-            for (auto value : values)
-            {
-                map.insert(value, value);
-            }
-
-            return map;
-        }
-
-    private:
-        std::vector<Type> values_;
-    };
+private:
+    std::vector<Type> values_;
+};
 }
 
 TEST_CASE("variadic_set_intersection()", "[logic][ecs][algorithm]")
@@ -285,23 +288,22 @@ TEST_CASE("variadic_set_intersection()", "[logic][ecs][algorithm]")
     SECTION("intersects three maps")
     {
         auto map1 = helper.create_map({ 1, 2, 3, 4, 6, 7, 8, 9 });
-        auto map2 = helper.create_map({ 0, 2, 3, 5,    7,    9 });
-        auto map3 = helper.create_map({ 0, 2, 3,    6, 7, 8, 9 });
+        auto map2 = helper.create_map({ 0, 2, 3, 5, 7, 9 });
+        auto map3 = helper.create_map({ 0, 2, 3, 6, 7, 8, 9 });
 
         helper.do_test({ 2, 3, 7, 9 }, map1, map2, map3);
     }
     SECTION("intersects empty maps")
     {
         auto map1 = helper.create_map({ 1, 2, 3 });
-        auto map2 = helper.create_map({ });
+        auto map2 = helper.create_map({});
 
-        helper.do_test({ }, map1, map2);
+        helper.do_test({}, map1, map2);
     }
     SECTION("can intersect any ordered map of pairs")
     {
         std::map<oki::Handle, unsigned int> map1;
-        for (auto value : { 1, 2, 4, 6, 7, 8 })
-        {
+        for (auto value : { 1, 2, 4, 6, 7, 8 }) {
             map1.emplace(value, value);
         }
         auto map2 = helper.create_map({ 1, 2, 5, 8 });

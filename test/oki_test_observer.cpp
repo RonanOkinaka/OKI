@@ -1,22 +1,20 @@
 #include "oki/oki_observer.h"
 
-#include "catch2/catch_test_macros.hpp"
 #include "catch2/catch_template_test_macros.hpp"
+#include "catch2/catch_test_macros.hpp"
 
 #include <numeric>
 #include <vector>
 
 template <typename Subject>
-class Observer
-    : public oki::Observer<Subject>
+class Observer : public oki::Observer<Subject>
 {
 public:
     void observe(Subject value, oki::ObserverOptions& options) override
     {
         values_.push_back(value);
 
-        if (disconnectNext_)
-        {
+        if (disconnectNext_) {
             options.disconnect();
         }
     }
@@ -42,7 +40,7 @@ TEMPLATE_TEST_CASE("SubjectPipe", "[logic][ecs][system]",
     {
         intChannel.send(1);
 
-        std::vector<int> expected{ 1 };
+        std::vector<int> expected { 1 };
         REQUIRE(observer.values_ == expected);
     }
     SECTION("can emit multiple signals")
@@ -70,7 +68,7 @@ TEMPLATE_TEST_CASE("SubjectPipe", "[logic][ecs][system]",
             intChannel.send(1);
             intChannel.send(2);
 
-            std::vector<int> expected{ 1, 2 };
+            std::vector<int> expected { 1, 2 };
             REQUIRE(observer.values_ == expected);
             REQUIRE(observer2.values_ == expected);
             REQUIRE(observer3.values_ == expected);
@@ -81,7 +79,7 @@ TEMPLATE_TEST_CASE("SubjectPipe", "[logic][ecs][system]",
 
             intChannel.send(1);
 
-            std::vector<int> expected{ 1 };
+            std::vector<int> expected { 1 };
             REQUIRE(observer.values_ == expected);
             REQUIRE(observer2.values_ == expected);
             REQUIRE(observer3.values_ == expected);
@@ -112,7 +110,7 @@ TEMPLATE_TEST_CASE("SubjectPipe", "[logic][ecs][system]",
         intChannel.send(3);
         intChannel.send(4);
 
-        std::vector<int> expected{ 1, 2 };
+        std::vector<int> expected { 1, 2 };
         REQUIRE(observer.values_ == expected);
     }
     SECTION("can disconnect observers with options")
@@ -126,7 +124,7 @@ TEMPLATE_TEST_CASE("SubjectPipe", "[logic][ecs][system]",
         intChannel.send(3);
         intChannel.send(4);
 
-        std::vector<int> expected{ 1, 2 };
+        std::vector<int> expected { 1, 2 };
         REQUIRE(observer.values_ == expected);
     }
 }
@@ -145,7 +143,7 @@ TEST_CASE("SignalManager")
     {
         sigMan.send(1);
 
-        REQUIRE(intObserver.values_ == std::vector<int>{ 1 });
+        REQUIRE(intObserver.values_ == std::vector<int> { 1 });
         REQUIRE(floatObserver.values_.empty());
     }
     SECTION("can emit multiple signals to different observers")
@@ -154,8 +152,8 @@ TEST_CASE("SignalManager")
         sigMan.send(2.f);
         sigMan.send(3.f);
 
-        CHECK(intObserver.values_ == std::vector<int>{ 1 });
-        CHECK(floatObserver.values_ == std::vector<float>{ 2., 3. });
+        CHECK(intObserver.values_ == std::vector<int> { 1 });
+        CHECK(floatObserver.values_ == std::vector<float> { 2., 3. });
     }
     SECTION("can disconnect_all() listeners of some type")
     {
@@ -169,7 +167,7 @@ TEST_CASE("SignalManager")
 
         CHECK(intObserver.values_.empty());
         CHECK(intObserver2.values_.empty());
-        CHECK(floatObserver.values_ == std::vector<float>{ 2. });
+        CHECK(floatObserver.values_ == std::vector<float> { 2. });
     }
     SECTION("can disconnect_all() listeners")
     {

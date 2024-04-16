@@ -6,55 +6,50 @@
 
 #include <vector>
 
-namespace ext
+namespace ext {
+class Window : public oki::System
 {
-    class Window
-        : public oki::System
+public:
+    bool init(int width, int height, const char* title)
     {
-    public:
-        bool init(int width, int height, const char* title)
-        {
-            if (!glfwInit())
-            {
-                return false;
-            }
-
-            window_ = glfwCreateWindow(width, height, title, nullptr, nullptr);
-            if (!window_)
-            {
-                return false;
-            }
-
-            glfwMakeContextCurrent(window_);
-            glClearColor(0., 0., 0., 1.);
-            return true;
+        if (!glfwInit()) {
+            return false;
         }
 
-        // Input should be implemented with signals instead (but I'm lazy)
-        bool key_pressed(int glfwKey)
-        {
-            return glfwGetKey(window_, glfwKey) == GLFW_PRESS;
+        window_ = glfwCreateWindow(width, height, title, nullptr, nullptr);
+        if (!window_) {
+            return false;
         }
 
-    private:
-        void step(oki::SystemManager&, oki::SystemOptions& opts) override
-        {
-            glfwSwapBuffers(window_);
-            glClear(GL_COLOR_BUFFER_BIT);
-            glfwPollEvents();
+        glfwMakeContextCurrent(window_);
+        glClearColor(0., 0., 0., 1.);
+        return true;
+    }
 
-            if (glfwWindowShouldClose(window_))
-            {
-                // Similarly, good design would emit an exit signal
-                opts.exit(0);
-                return;
-            }
+    // Input should be implemented with signals instead (but I'm lazy)
+    bool key_pressed(int glfwKey)
+    {
+        return glfwGetKey(window_, glfwKey) == GLFW_PRESS;
+    }
 
-            glfwMakeContextCurrent(window_);
+private:
+    void step(oki::SystemManager&, oki::SystemOptions& opts) override
+    {
+        glfwSwapBuffers(window_);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glfwPollEvents();
+
+        if (glfwWindowShouldClose(window_)) {
+            // Similarly, good design would emit an exit signal
+            opts.exit(0);
+            return;
         }
 
-        GLFWwindow* window_ = nullptr;
-    };
+        glfwMakeContextCurrent(window_);
+    }
+
+    GLFWwindow* window_ = nullptr;
+};
 }
 
 #endif // EXT_WINDOW_H
