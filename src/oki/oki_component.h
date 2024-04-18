@@ -383,8 +383,8 @@ private:
     template <typename Type>
     Container<Type>& create_cont_()
     {
-        auto [iter, _] = data_.emplace(oki::intl_::get_type<Type>(),
-            ErasedContainer::erase_type<Container<Type>>());
+        auto [iter, _]
+            = data_.emplace(oki::intl_::get_type<Type>(), Container<Type>());
 
         return iter->second;
     }
@@ -392,11 +392,13 @@ private:
     template <typename Type>
     Container<Type>& get_or_create_cont_()
     {
-        auto iter = data_.find(oki::intl_::get_type<Type>());
+        auto type = oki::intl_::get_type<Type>();
+        auto iter = data_.find(type);
 
         if (iter == data_.end()) {
-            iter = data_.emplace_hint(iter, oki::intl_::get_type<Type>(),
-                ErasedContainer::erase_type<Container<Type>>());
+            // This branch is relatively unlikely, so we can avoid
+            // type-erasing a new Container<Type> most of the time
+            iter = data_.emplace(type, Container<Type>()).first;
         }
 
         return iter->second.template get_as<Container<Type>>();

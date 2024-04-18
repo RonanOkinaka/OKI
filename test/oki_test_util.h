@@ -61,7 +61,7 @@ struct ObjHelper
     static void test(std::optional<std::size_t> constr,
         std::optional<std::size_t> copies, std::optional<std::size_t> moves)
     {
-        test_helper::ObjHelper::test();
+        test();
 
         if (constr) {
             CHECK(numConstructs == constr.value());
@@ -72,6 +72,12 @@ struct ObjHelper
         if (moves) {
             CHECK(numMoves == moves.value());
         }
+    }
+
+    static void test_max_num_copies(std::size_t copies)
+    {
+        test();
+        CHECK(numCopies <= copies);
     }
 
     std::size_t value_;

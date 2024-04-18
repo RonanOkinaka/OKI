@@ -14,58 +14,85 @@
 using Value = test_helper::ObjHelper;
 
 TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
-    (oki::intl_::OptimalErasedType<test_helper::ObjHelper>),
+    (oki::intl_::ErasedType<sizeof(Value), alignof(Value)>),
+    (oki::intl_::OptimalErasedType<Value>),
     (oki::intl_::ErasedType<1, 1>)) // Undersized so won't fit an ObjHelper
 {
     Value::reset();
 
-    SECTION("default constructs when no arguments are provided")
+    SECTION("default emplaces when no arguments are provided")
     {
         {
-            auto value = TestType::template erase_type<Value>();
+            TestType value;
+            value.template emplace<Value>();
 
             REQUIRE(value.template get_as<Value>().value_ == 0);
         }
 
-        Value::test(1, 0, 0);
+        Value::test_max_num_copies(0);
     }
-    SECTION("calls constructor on arguments")
+    SECTION("calls constructor on arguments to emplace()")
     {
         {
-            auto value = TestType::template erase_type<Value>(1u);
+            TestType value;
+            value.template emplace<Value>(1u);
 
             REQUIRE(value.template get_as<Value>().value_ == 1);
         }
 
-        Value::test(1, 0, 0);
+        Value::test_max_num_copies(0);
     }
-    SECTION("move constructs when same type is moved in")
+    SECTION("can copy construct")
     {
         {
-            auto init = Value(1u);
-            auto value = TestType::template erase_type<Value>(std::move(init));
+            Value init { 1u };
+            TestType value = init;
 
             REQUIRE(value.template get_as<Value>().value_ == init.value_);
         }
 
-        Value::test(2, 0, 1);
+        Value::test_max_num_copies(1);
     }
-    SECTION("copy constructs when same type is copied in")
+    SECTION("can move construct")
     {
         {
-            auto init = Value(1u);
-            auto value = TestType::template erase_type<Value>(init);
+            Value init { 1u };
+            TestType value = std::move(init);
 
             REQUIRE(value.template get_as<Value>().value_ == init.value_);
         }
 
-        Value::test(2, 1, 0);
+        Value::test_max_num_copies(0);
+    }
+    SECTION("can copy emplace")
+    {
+        {
+            Value init { 1u };
+            TestType value;
+            value.template emplace<Value>(init);
+
+            REQUIRE(value.template get_as<Value>().value_ == init.value_);
+        }
+
+        Value::test_max_num_copies(1);
+    }
+    SECTION("can move emplace")
+    {
+        {
+            Value init { 1u };
+            TestType value;
+            value.template emplace<Value>(std::move(init));
+
+            REQUIRE(value.template get_as<Value>().value_ == 1u);
+        }
+
+        Value::test_max_num_copies(0);
     }
     SECTION("copies and properly destructs after copy assignment")
     {
         {
-            auto value1 = TestType::template erase_type<Value>(1u);
-            auto value2 = TestType::template erase_type<Value>(2u);
+            TestType value1 = Value(1u);
+            TestType value2 = Value(2u);
 
             value1 = value2;
 
@@ -73,132 +100,97 @@ TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
             REQUIRE(value2.template get_as<Value>().value_ == 2);
         }
 
-        Value::test(2, 1, 0);
+        Value::test_max_num_copies(1);
     }
     SECTION("moves and properly destructs after move assignment")
     {
         {
-            auto value1 = TestType::template erase_type<Value>(1u);
-            auto value2 = TestType::template erase_type<Value>(2u);
+            TestType value1 = Value(1u);
+            TestType value2 = Value(2u);
 
             value1 = std::move(value2);
 
-            REQUIRE(value1.template get_as<Value>().value_ == 2);
+            REQUIRE(value2.template get_as<Value>().value_ == 2);
         }
 
-        Value::test(2, 0, std::nullopt);
-        CHECK(Value::numMoves <= 1); // Unbuffered simply swaps pointers
+        Value::test_max_num_copies(0);
     }
-    SECTION("moves and properly destructs after copy_from()")
+    SECTION("copies and properly destructs after copy_from()")
     {
         {
-            auto value1 = TestType::template erase_type<Value>(1u);
-            auto value2 = TestType::template erase_type<Value>(2u);
+            TestType value1 = Value(1u);
+            TestType value2 = Value(2u);
 
-            value1.template copy_from<Value>(value2);
+            value1.copy_from(value2);
 
             REQUIRE(value1.template get_as<Value>().value_ == 2);
+            REQUIRE(value2.template get_as<Value>().value_ == 2);
         }
 
-        Value::test(2, 1, 0);
+        Value::test_max_num_copies(1);
     }
     SECTION("moves and properly destructs after move_from()")
     {
         {
-            auto value1 = TestType::template erase_type<Value>(1u);
-            auto value2 = TestType::template erase_type<Value>(2u);
+            TestType value1 = Value(1u);
+            TestType value2 = Value(2u);
 
-            value1.template move_from<Value>(std::move(value2));
+            value1.move_from(std::move(value2));
 
             REQUIRE(value1.template get_as<Value>().value_ == 2);
         }
 
-        Value::test(2, 0, std::nullopt);
-        CHECK(Value::numMoves <= 1);
+        Value::test_max_num_copies(0);
     }
     SECTION("properly destructs after copy self-assignment")
     {
         {
-            auto value = TestType::template erase_type<Value>(1u);
+            TestType value = Value(1u);
             value = value;
 
             CHECK(value.template get_as<Value>().value_ == 1);
         }
 
-        Value::test(1, 1, 0);
-    }
-    SECTION("can assign rvalues with hold()")
-    {
-        {
-            auto value = TestType::template erase_type<Value>(1u);
-            value.template hold<Value>(Value { 2 });
-
-            CHECK(value.template get_as<Value>().value_ == 2);
-        }
-
-        Value::test(2, 0, 1);
-    }
-    SECTION("can move values with hold()")
-    {
-        {
-            auto value = TestType::template erase_type<Value>(1u);
-            auto other = Value { 2 };
-
-            value.template hold<Value>(std::move(other));
-
-            CHECK(value.template get_as<Value>().value_ == 2);
-        }
-
-        Value::test(2, 0, 1);
-    }
-    SECTION("can copy values with hold()")
-    {
-        {
-            auto value = TestType::template erase_type<Value>(1u);
-            Value other = Value { 2 };
-            value.template hold<Value>(other);
-
-            CHECK(value.template get_as<Value>().value_ == 2);
-        }
-
-        Value::test(2, 1, 0);
+        Value::test_max_num_copies(1);
     }
     SECTION("can be copy-constructed")
     {
         {
-            auto value = TestType::template erase_type<Value>(1u);
-            auto value2 = value;
+            TestType value1 = Value(1u);
+            auto value2 = value1;
 
             CHECK(value2.template get_as<Value>().value_ == 1);
         }
 
-        Value::test(2, 1, 0);
+        Value::test_max_num_copies(1);
     }
     SECTION("can be move-constructed")
     {
         {
-            auto value = TestType::template erase_type<Value>(1u);
-            auto value2 = std::move(value);
+            TestType value1 = Value(1u);
+            auto value2 = std::move(value1);
 
             CHECK(value2.template get_as<Value>().value_ == 1);
         }
 
-        Value::test(2, 0, 1);
+        Value::test_max_num_copies(0);
     }
     SECTION("can hold a move-only type")
     {
-        // This basically just needs to compile
         using MoveType = std::unique_ptr<Value>;
-        using TestType2 = oki::intl_::OptimalErasedType<MoveType>;
 
         {
-            auto value
-                = TestType2::template erase_type<MoveType>(new Value { 1u });
+            TestType value1 = std::make_unique<Value>(1u);
+            TestType value2;
 
-            auto ptr = value.template get_as<MoveType>().get();
+            REQUIRE_THROWS(value2.copy_from(value1));
+
+            value2.move_from(std::move(value1));
+
+            auto ptr = value2.template get_as<MoveType>().get();
             CHECK((ptr && ptr->value_ == 1));
         }
 
-        Value::test(1, 0, 0);
+        Value::test_max_num_copies(0);
     }
 }

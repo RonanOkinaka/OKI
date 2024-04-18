@@ -265,7 +265,7 @@ private:
     template <typename Subject>
     static ErasedPipeData create_erased_pipe_()
     {
-        return ErasedPipeData { ErasedPipe::erase_type<Pipe<Subject>>(),
+        return ErasedPipeData { Pipe<Subject> {},
             &disconn_type_erased_<Subject> };
     }
 };
