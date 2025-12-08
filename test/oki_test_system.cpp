@@ -7,10 +7,7 @@
 
 struct TestSystem : public oki::System
 {
-    void step(oki::SystemManager& manager, oki::SystemOptions& opts) override
-    {
-        ++numCalls;
-    }
+    void step(oki::SystemManager& manager, oki::SystemOptions& opts) override { ++numCalls; }
 
     unsigned int numCalls = 0;
 };
@@ -22,10 +19,7 @@ TEST_CASE("SystemManager")
 
     auto handle = sysMan.add_priority_system(10, system);
 
-    SECTION("can add a system")
-    {
-        REQUIRE_FALSE(oki::intl_::is_bad_handle(handle));
-    }
+    SECTION("can add a system") { REQUIRE_FALSE(oki::intl_::is_bad_handle(handle)); }
     SECTION("can call a system's step()")
     {
         auto [exit, _] = sysMan.step();
@@ -36,8 +30,7 @@ TEST_CASE("SystemManager")
     SECTION("can add a functional system")
     {
         bool called = false;
-        auto funcSys
-            = oki::create_functional_system([&](auto&...) { called = true; });
+        auto funcSys = oki::create_functional_system([&](auto&...) { called = true; });
 
         sysMan.add_system(*funcSys);
         sysMan.step();
@@ -112,8 +105,8 @@ TEST_CASE("SystemManager")
     }
     SECTION("can exit from run()")
     {
-        auto funcSys = oki::create_functional_system(
-            [](auto&, oki::SystemOptions& opts) { opts.exit(1); });
+        auto funcSys
+            = oki::create_functional_system([](auto&, oki::SystemOptions& opts) { opts.exit(1); });
 
         sysMan.add_priority_system(20, *funcSys);
 
@@ -124,16 +117,15 @@ TEST_CASE("SystemManager")
     {
         unsigned int counter = 0;
 
-        auto funcSys = oki::create_functional_system(
-            [&](auto&, oki::SystemOptions& opts) {
-                if (counter == 5) {
-                    opts.exit();
-                    return;
-                }
+        auto funcSys = oki::create_functional_system([&](auto&, oki::SystemOptions& opts) {
+            if (counter == 5) {
+                opts.exit();
+                return;
+            }
 
-                ++counter;
-                opts.skip_rest();
-            });
+            ++counter;
+            opts.skip_rest();
+        });
 
         sysMan.add_priority_system(20, *funcSys);
 
@@ -142,10 +134,7 @@ TEST_CASE("SystemManager")
         CHECK(system.numCalls == 0);
         CHECK(counter == 5);
     }
-    SECTION("can get inserted systems")
-    {
-        CHECK(&system == sysMan.get_system(handle));
-    }
+    SECTION("can get inserted systems") { CHECK(&system == sysMan.get_system(handle)); }
     SECTION("cannot get nonexistent systems")
     {
         sysMan.remove_system(handle);

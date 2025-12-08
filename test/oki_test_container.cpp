@@ -49,11 +49,9 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         }
     };
 
-    test_insertion(
-        std::mem_fn(&decltype(map)::emplace<const char*>), "emplace");
+    test_insertion(std::mem_fn(&decltype(map)::emplace<const char*>), "emplace");
     test_insertion(std::mem_fn(&decltype(map)::insert<const char*>), "insert");
-    test_insertion(std::mem_fn(&decltype(map)::insert_or_assign<const char*>),
-        "insert_or_assign");
+    test_insertion(std::mem_fn(&decltype(map)::insert_or_assign<const char*>), "insert_or_assign");
     test_insertion(
         [](auto& map, auto key, auto& value) {
             return std::make_pair(map.emplace_unchecked(key, value), true);
@@ -65,8 +63,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         },
         "insert_unchecked");
 
-    SECTION(
-        "does not change values via insert(), returns current value instead")
+    SECTION("does not change values via insert(), returns current value instead")
     {
         auto [iter, success] = map.insert(2, "0");
 
@@ -110,10 +107,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         REQUIRE(iter->second == "2");
         CHECK(cMap.contains(2));
     }
-    SECTION("does not retrieve invalid values")
-    {
-        REQUIRE(map.find(0) == map.end());
-    }
+    SECTION("does not retrieve invalid values") { REQUIRE(map.find(0) == map.end()); }
     SECTION("iterates over keys in sorted order")
     {
         map.insert(1, "1");
@@ -218,8 +212,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
                 auto value = Value { 1 };
                 lifetimeMap.emplace(1);
 
-                auto [iter, success]
-                    = lifetimeMap.insert_or_assign(1, std::move(value));
+                auto [iter, success] = lifetimeMap.insert_or_assign(1, std::move(value));
 
                 REQUIRE(iter->second.value_ == 1);
             }
@@ -235,8 +228,7 @@ class IntersectionHelper
 {
 public:
     template <typename... Pairs>
-    void operator()(
-        const std::pair<oki::Handle, Type>& pair, const Pairs&... pairs)
+    void operator()(const std::pair<oki::Handle, Type>& pair, const Pairs&... pairs)
     {
         CHECK(pair.first == pair.second);
         CHECK(((pairs.first == pairs.second) && ...));

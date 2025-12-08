@@ -63,10 +63,7 @@ public:
 
     void skip_rest() noexcept { loopChoice_ = SKIP; }
 
-    std::pair<bool, int> exit_info() const noexcept
-    {
-        return { loopChoice_ == EXIT, exitCode_ };
-    }
+    std::pair<bool, int> exit_info() const noexcept { return { loopChoice_ == EXIT, exitCode_ }; }
 
     void exit(int code = 0) noexcept
     {
@@ -128,8 +125,7 @@ public:
      * deletion/access/etc.
      */
     template <typename SystemType>
-    oki::Handle add_priority_system(
-        oki::SystemPriority priority, SystemType& system)
+    oki::Handle add_priority_system(oki::SystemPriority priority, SystemType& system)
     {
         static_assert(std::is_base_of_v<oki::System, SystemType>);
 
@@ -261,8 +257,7 @@ private:
 
     oki::intl_::DefaultHandleGenerator<oki::Handle> handleGen_;
 
-    auto seek_handle_(oki::Handle handle) noexcept ->
-        typename decltype(systems_)::iterator
+    auto seek_handle_(oki::Handle handle) noexcept -> typename decltype(systems_)::iterator
     {
         // A linear search is fine, because in general there should
         // be very few systems

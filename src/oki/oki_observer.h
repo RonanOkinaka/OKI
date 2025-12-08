@@ -185,8 +185,7 @@ public:
 
         // If we don't have it, make one
         if (pipeIter == data_.end()) {
-            pipeIter = data_.emplace(type, this->create_erased_pipe_<Subject>())
-                           .first;
+            pipeIter = data_.emplace(type, this->create_erased_pipe_<Subject>()).first;
         }
 
         // Then connect our observer
@@ -212,8 +211,7 @@ public:
     template <typename Subject>
     void disconnect_all()
     {
-        this->call_on_pipe_checked_<Subject>(
-            [](auto& pipe) { pipe.disconnect_all(); });
+        this->call_on_pipe_checked_<Subject>([](auto& pipe) { pipe.disconnect_all(); });
     }
 
     /*
@@ -227,8 +225,7 @@ public:
     template <typename Subject>
     void send(const Subject& data)
     {
-        this->call_on_pipe_checked_<Subject>(
-            [&](auto& pipe) { pipe.send(data); });
+        this->call_on_pipe_checked_<Subject>([&](auto& pipe) { pipe.send(data); });
     }
 
 private:
@@ -256,8 +253,7 @@ private:
     }
 
     template <typename Subject>
-    static void disconn_type_erased_(
-        ErasedPipe& pipe, oki::ObserverHandle handle)
+    static void disconn_type_erased_(ErasedPipe& pipe, oki::ObserverHandle handle)
     {
         pipe.template get_as<Pipe<Subject>>().disconnect(handle.handle_);
     }
@@ -265,8 +261,7 @@ private:
     template <typename Subject>
     static ErasedPipeData create_erased_pipe_()
     {
-        return ErasedPipeData { Pipe<Subject> {},
-            &disconn_type_erased_<Subject> };
+        return ErasedPipeData { Pipe<Subject> {}, &disconn_type_erased_<Subject> };
     }
 };
 }

@@ -6,8 +6,7 @@
 namespace test_helper {
 struct ObjHelper
 {
-    static inline std::size_t numConstructs = 0, numCopies = 0, numMoves = 0,
-                              numDestructs = 0;
+    static inline std::size_t numConstructs = 0, numCopies = 0, numMoves = 0, numDestructs = 0;
 
     ObjHelper()
         : value_(0)
@@ -51,15 +50,12 @@ struct ObjHelper
         return (*this);
     }
 
-    static void reset()
-    {
-        numConstructs = numCopies = numMoves = numDestructs = 0;
-    }
+    static void reset() { numConstructs = numCopies = numMoves = numDestructs = 0; }
 
     static void test() { CHECK(numConstructs == numDestructs); }
 
-    static void test(std::optional<std::size_t> constr,
-        std::optional<std::size_t> copies, std::optional<std::size_t> moves)
+    static void test(std::optional<std::size_t> constr, std::optional<std::size_t> copies,
+        std::optional<std::size_t> moves)
     {
         test();
 

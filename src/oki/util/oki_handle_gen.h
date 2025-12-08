@@ -31,44 +31,29 @@ public:
 
     LinearHandleGenerator(const LinearHandleGenerator<HandleType>&) = delete;
 
-    constexpr LinearHandleGenerator(
-        LinearHandleGenerator<HandleType>&&) noexcept
-        = default;
+    constexpr LinearHandleGenerator(LinearHandleGenerator<HandleType>&&) noexcept = default;
 
     ~LinearHandleGenerator() noexcept = default;
 
-    LinearHandleGenerator<HandleType>& operator=(
-        const LinearHandleGenerator<HandleType>&)
-        = delete;
+    LinearHandleGenerator<HandleType>& operator=(const LinearHandleGenerator<HandleType>&) = delete;
 
-    LinearHandleGenerator<HandleType>& operator=(
-        LinearHandleGenerator<HandleType>&&)
-        = default;
+    LinearHandleGenerator<HandleType>& operator=(LinearHandleGenerator<HandleType>&&) = default;
 
     // Consumes the next handle value
-    constexpr HandleType create_handle() noexcept
-    {
-        return oki::intl_::advance(counter_);
-    }
+    constexpr HandleType create_handle() noexcept { return oki::intl_::advance(counter_); }
 
     /*
      * Semantically, signifies that this Handle will no longer be used.
      * Returns a bool explaining whether the Handle was deleted without
      * error (which is always true for this class).
      */
-    constexpr bool destroy_handle(const HandleType handle) noexcept
-    {
-        return true;
-    }
+    constexpr bool destroy_handle(const HandleType handle) noexcept { return true; }
 
     /*
      * Returns the generator's state to one equivalent to immediately
      * after initialization
      */
-    constexpr void reset() noexcept
-    {
-        counter_ = oki::intl_::get_first_valid_handle<HandleType>();
-    }
+    constexpr void reset() noexcept { counter_ = oki::intl_::get_first_valid_handle<HandleType>(); }
 
     /*
      * The simplest of the handle verifications, this will miss most bugs:
@@ -78,8 +63,7 @@ public:
      */
     constexpr bool verify_handle(const HandleType handle) const noexcept
     {
-        return !oki::intl_::is_bad_handle(handle)
-            && std::less<HandleType> {}(handle, counter_);
+        return !oki::intl_::is_bad_handle(handle) && std::less<HandleType> {}(handle, counter_);
     }
 
 private:
@@ -110,19 +94,13 @@ public:
 
     ~DebugHandleGenerator() noexcept = default;
 
-    DebugHandleGenerator<HandleType>& operator=(
-        const DebugHandleGenerator<HandleType>&)
-        = delete;
+    DebugHandleGenerator<HandleType>& operator=(const DebugHandleGenerator<HandleType>&) = delete;
 
-    DebugHandleGenerator<HandleType>& operator=(
-        DebugHandleGenerator<HandleType>&&) noexcept
+    DebugHandleGenerator<HandleType>& operator=(DebugHandleGenerator<HandleType>&&) noexcept
         = default;
 
     // Consumes the next handle value
-    constexpr HandleType create_handle() noexcept
-    {
-        return handleGen_.create_handle();
-    }
+    constexpr HandleType create_handle() noexcept { return handleGen_.create_handle(); }
 
     /*
      * Returns true if handle destruction was successful.
@@ -133,8 +111,7 @@ public:
     {
         // Fail if the handle was already deleted (or is the invalid
         // constant)
-        return handleGen_.verify_handle(handle)
-            && invalidHandles_.insert(handle).second;
+        return handleGen_.verify_handle(handle) && invalidHandles_.insert(handle).second;
     }
 
     /*
@@ -186,12 +163,9 @@ public:
 
     ~ReuseHandleGenerator() noexcept = default;
 
-    ReuseHandleGenerator<HandleType>& operator=(
-        const ReuseHandleGenerator<HandleType>&)
-        = delete;
+    ReuseHandleGenerator<HandleType>& operator=(const ReuseHandleGenerator<HandleType>&) = delete;
 
-    ReuseHandleGenerator<HandleType>& operator=(
-        ReuseHandleGenerator<HandleType>&&) noexcept
+    ReuseHandleGenerator<HandleType>& operator=(ReuseHandleGenerator<HandleType>&&) noexcept
         = default;
 
     // Consumes the next handle value

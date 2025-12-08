@@ -23,24 +23,17 @@ TEMPLATE_TEST_CASE("All handle generators", "[logic][ecs][handle]",
     TestType handleGen;
     std::array<oki::Handle, 15> handles;
 
-    std::generate(handles.begin(), handles.end(),
-        [&]() { return handleGen.create_handle(); });
-    std::unordered_set<oki::Handle> distinctHandles(
-        handles.begin(), handles.end());
+    std::generate(handles.begin(), handles.end(), [&]() { return handleGen.create_handle(); });
+    std::unordered_set<oki::Handle> distinctHandles(handles.begin(), handles.end());
 
     SECTION("generates valid handles")
     {
-        REQUIRE(std::none_of(
-            handles.begin(), handles.end(), oki::intl_::is_bad_handle<>));
+        REQUIRE(std::none_of(handles.begin(), handles.end(), oki::intl_::is_bad_handle<>));
     }
-    SECTION("generates distinct handles")
-    {
-        REQUIRE(distinctHandles.size() == handles.size());
-    }
+    SECTION("generates distinct handles") { REQUIRE(distinctHandles.size() == handles.size()); }
     SECTION("correctly verifies the invalid handle constant")
     {
-        REQUIRE_FALSE(handleGen.verify_handle(
-            oki::intl_::get_invalid_handle_constant<>()));
+        REQUIRE_FALSE(handleGen.verify_handle(oki::intl_::get_invalid_handle_constant<>()));
     }
 }
 
@@ -53,10 +46,8 @@ TEMPLATE_TEST_CASE("OKI handle generators", "[logic][ecs][handle]",
     TestType handleGen;
     std::array<oki::Handle, 15> handles;
 
-    std::generate(handles.begin(), handles.end(),
-        [&]() { return handleGen.create_handle(); });
-    std::unordered_set<oki::Handle> distinctHandles(
-        handles.begin(), handles.end());
+    std::generate(handles.begin(), handles.end(), [&]() { return handleGen.create_handle(); });
+    std::unordered_set<oki::Handle> distinctHandles(handles.begin(), handles.end());
 
     SECTION("correctly verifies given handles")
     {
@@ -76,8 +67,7 @@ TEMPLATE_TEST_CASE("OKI handle generators", "[logic][ecs][handle]",
     SECTION("returns generation state to default on reset")
     {
         handleGen.reset();
-        REQUIRE(handleGen.create_handle()
-            == oki::intl_::get_first_valid_handle<>());
+        REQUIRE(handleGen.create_handle() == oki::intl_::get_first_valid_handle<>());
     }
     SECTION("returns verification state to default on reset")
     {
@@ -93,10 +83,7 @@ TEMPLATE_TEST_CASE("OKI tracking handle generators", "[logic][ecs][handle]",
     TestType handleGen;
     auto handle = handleGen.create_handle();
 
-    SECTION("successfully deletes a valid handle")
-    {
-        REQUIRE(handleGen.destroy_handle(handle));
-    }
+    SECTION("successfully deletes a valid handle") { REQUIRE(handleGen.destroy_handle(handle)); }
     SECTION("correctly verifies deleted handles that have not been reused")
     {
         handleGen.destroy_handle(handle);

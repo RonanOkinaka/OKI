@@ -47,8 +47,7 @@ TEST_CASE("ComponentManager")
 
         CHECK(compMan.get_component<int>(entity) == 2);
     }
-    SECTION(
-        "can update component with reference from bind_component_unchecked()")
+    SECTION("can update component with reference from bind_component_unchecked()")
     {
         compMan.bind_component(entity, 0);
 
@@ -110,8 +109,7 @@ TEST_CASE("ComponentManager")
         compMan.bind_component(entity, 1.5f);
         compMan.bind_component(entity, std::string { "wowie" });
 
-        auto [i, f, s]
-            = compMan.get_components<int, float, std::string>(entity);
+        auto [i, f, s] = compMan.get_components<int, float, std::string>(entity);
 
         REQUIRE(i == 0);
         REQUIRE(f == 1.5f);
@@ -133,9 +131,7 @@ TEST_CASE("ComponentManager")
         compMan.bind_component(entity, 0);
         compMan.bind_component(entity, 1.5f);
 
-        auto [i, c, f, s]
-            = compMan.get_components_checked<int, char, float, std::string>(
-                entity);
+        auto [i, c, f, s] = compMan.get_components_checked<int, char, float, std::string>(entity);
 
         REQUIRE((i && *i == 0));
         REQUIRE_FALSE(c);
@@ -213,9 +209,7 @@ TEST_CASE("ComponentManager")
         REQUIRE(std::equal(values.begin(), values.end(), expectedVals));
 
         compMan.for_each<unsigned>(
-            [&](const oki::Entity ent, const unsigned val) {
-                REQUIRE(val == 0);
-            });
+            [&](const oki::Entity ent, const unsigned val) { REQUIRE(val == 0); });
     }
     SECTION("can iterate over several component types")
     {
@@ -241,8 +235,7 @@ TEST_CASE("ComponentManager")
 
         {
             std::set<int> values;
-            compMan.for_each<int, float, char>(
-                [&](auto ent, int i, auto...) { values.insert(i); });
+            compMan.for_each<int, float, char>([&](auto ent, int i, auto...) { values.insert(i); });
 
             int expectedVals[2] = { 1, 4 };
             REQUIRE(values.size() == 2);
@@ -250,8 +243,7 @@ TEST_CASE("ComponentManager")
         }
         {
             std::set<int> values;
-            compMan.for_each<int, char>(
-                [&](auto ent, int i, auto...) { values.insert(i); });
+            compMan.for_each<int, char>([&](auto ent, int i, auto...) { values.insert(i); });
 
             int expectedVals[4] = { 1, 2, 4 };
             REQUIRE(values.size() == 3);
@@ -352,19 +344,19 @@ TEST_CASE("ComponentManager")
     {
         Value::reset();
 
-        auto test_lifetime = [](auto memFunc, std::size_t value, auto constr,
-                                 auto copies, auto moves) {
-            {
-                oki::ComponentManager tempCompMan;
-                auto ent = tempCompMan.create_entity();
+        auto test_lifetime
+            = [](auto memFunc, std::size_t value, auto constr, auto copies, auto moves) {
+                  {
+                      oki::ComponentManager tempCompMan;
+                      auto ent = tempCompMan.create_entity();
 
-                memFunc(tempCompMan, ent);
+                      memFunc(tempCompMan, ent);
 
-                REQUIRE(tempCompMan.get_component<Value>(ent).value_ == value);
-            }
+                      REQUIRE(tempCompMan.get_component<Value>(ent).value_ == value);
+                  }
 
-            Value::test(constr, copies, moves);
-        };
+                  Value::test(constr, copies, moves);
+              };
 
         SECTION("can insert and retrieve components")
         {
@@ -413,8 +405,7 @@ TEST_CASE("ComponentManager")
             test_lifetime(
                 [](TestType& manager, oki::Entity entity) {
                     manager.emplace_component<Value>(entity);
-                    auto [comp, success]
-                        = manager.bind_or_assign_component(entity, Value { 1 });
+                    auto [comp, success] = manager.bind_or_assign_component(entity, Value { 1 });
 
                     CHECK_FALSE(success);
                 },
@@ -427,8 +418,7 @@ TEST_CASE("ComponentManager")
                     manager.emplace_component<Value>(entity);
 
                     Value value { 1 };
-                    auto [comp, success]
-                        = manager.bind_or_assign_component(entity, value);
+                    auto [comp, success] = manager.bind_or_assign_component(entity, value);
 
                     CHECK_FALSE(success);
                 },
