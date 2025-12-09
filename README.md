@@ -15,7 +15,7 @@ This is a benefit in and of itself, but comes with other welcome merits. This is
 
 ## Building
 
-At the moment, this "library" is header-only (due in large part to the heavy use of template classes). 
+At the moment, this "library" is header-only (due in large part to the heavy use of template classes).
 
 So, building is easy: `#include "oki/oki_ecs.h"`, use the library, then compile your code.
 
@@ -35,3 +35,20 @@ Currently, this project has been successfully built on the following platforms:
 | Windows 10 WSL (Ubuntu) | x86-64       | g++11.4                              |
 | Linux Mint 21           | x86-64       | g++11.4                              |
 | MacOS 13.5              | ARM          | clang-15                             |
+
+## Repo Setup
+
+### Prerequisites:
+
+I am using the following software versions. Note that most features are likely to work even with much higher or lower versions.
+
+| Software       | Version |
+| :----:         | :----:  |
+| `git`          | 2.23+   |
+| `clang-format` | 18.1.8  |
+| `pre-commit`   | 3.7.0   |
+
+To set up tooling related to the repository itself, run the following commands:
+
+- `pre-commit install`
+- `git config blame.ignoreRevsFile .git-blame-ignore-revs`
