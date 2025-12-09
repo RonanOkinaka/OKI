@@ -95,8 +95,7 @@ public:
     }
 
     template <typename Type,
-        std::enable_if_t<std::negation_v<std::is_same<std::decay_t<Type>,
-                             ErasedType<Size, Align>>>,
+        std::enable_if_t<std::negation_v<std::is_same<std::decay_t<Type>, ErasedType<Size, Align>>>,
             int>
         = 0>
     ErasedType(Type&& value)
@@ -201,8 +200,7 @@ private:
     template <typename Type>
     void destroy_inner_()
     {
-        this->visit_storage_<Type>(
-            [](auto& data) { data.template destroy<Type>(); });
+        this->visit_storage_<Type>([](auto& data) { data.template destroy<Type>(); });
     }
 
     // Type-erased construction
@@ -218,8 +216,7 @@ private:
         if constexpr (std::is_copy_constructible_v<Type>) {
             this->reinit_<Type>(that.get_as<Type>());
         } else {
-            throw std::logic_error(
-                "Only use copy_from() on copy-constructible types");
+            throw std::logic_error("Only use copy_from() on copy-constructible types");
         }
     }
 
@@ -229,8 +226,7 @@ private:
         if constexpr (std::is_move_constructible_v<Type>) {
             this->reinit_<Type>(std::move(that.get_as<Type>()));
         } else {
-            throw std::logic_error(
-                "Only use move_from() on move-constructible types");
+            throw std::logic_error("Only use move_from() on move-constructible types");
         }
     }
 
@@ -244,9 +240,8 @@ private:
         this->reset();
 
         // Then, load the new values
-        this->visit_storage_<Type>([&](auto& data) {
-            data.template init<Type>(std::forward<Args>(args)...);
-        });
+        this->visit_storage_<Type>(
+            [&](auto& data) { data.template init<Type>(std::forward<Args>(args)...); });
 
         destroy_ = &ErasedType<Size, Align>::destroy_inner_<Type>;
         copy_ = &ErasedType<Size, Align>::copy_inner_<Type>;
@@ -303,10 +298,7 @@ namespace std {
 template <>
 struct hash<oki::intl_::TypeIndex>
 {
-    std::size_t operator()(const oki::intl_::TypeIndex& type) const
-    {
-        return type.hash();
-    }
+    std::size_t operator()(const oki::intl_::TypeIndex& type) const { return type.hash(); }
 };
 }
 

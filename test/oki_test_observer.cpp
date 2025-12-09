@@ -24,8 +24,7 @@ public:
     bool disconnectNext_ = false;
 };
 
-TEMPLATE_TEST_CASE("SubjectPipe", "[logic][ecs][system]",
-    (oki::SubjectPipe<int>),
+TEMPLATE_TEST_CASE("SubjectPipe", "[logic][ecs][system]", (oki::SubjectPipe<int>),
     // Designed to extend SubjectPipe to any type so has same test semantics
     (oki::SignalManager))
 {

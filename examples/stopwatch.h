@@ -34,8 +34,7 @@ private:
 };
 }
 
-using StopWatch = ext::intl_::BasicStopWatch<std::chrono::steady_clock,
-    std::ratio<1>, float>;
+using StopWatch = ext::intl_::BasicStopWatch<std::chrono::steady_clock, std::ratio<1>, float>;
 }
 
 #endif // EXT_STOPWATCH_H

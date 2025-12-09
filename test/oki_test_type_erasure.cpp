@@ -14,8 +14,7 @@
 using Value = test_helper::ObjHelper;
 
 TEMPLATE_TEST_CASE("ErasedType", "[logic][ecs][type]",
-    (oki::intl_::ErasedType<sizeof(Value), alignof(Value)>),
-    (oki::intl_::OptimalErasedType<Value>),
+    (oki::intl_::ErasedType<sizeof(Value), alignof(Value)>), (oki::intl_::OptimalErasedType<Value>),
     (oki::intl_::ErasedType<1, 1>)) // Undersized so won't fit an ObjHelper
 {
     Value::reset();

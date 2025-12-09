@@ -8,9 +8,7 @@
 #include <type_traits>
 
 namespace oki {
-class Engine : public oki::ComponentManager,
-               public oki::SignalManager,
-               public oki::SystemManager
+class Engine : public oki::ComponentManager, public oki::SignalManager, public oki::SystemManager
 { };
 
 template <typename ChildClass = void>
@@ -26,8 +24,7 @@ private:
     {
         // Optional CRTP
         if constexpr (std::is_base_of_v<EngineSystem, ChildClass>) {
-            static_cast<ChildClass*>(this)->step(
-                static_cast<oki::Engine&>(manager), opts);
+            static_cast<ChildClass*>(this)->step(static_cast<oki::Engine&>(manager), opts);
         } else {
             this->step(static_cast<oki::Engine&>(manager), opts);
         }

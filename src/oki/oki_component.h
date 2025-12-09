@@ -41,8 +41,7 @@ class ComponentManager
     using HandleType = oki::Entity::HandleType;
 
     template <typename Type>
-    using Container
-        = oki::intl_::AssocSortedVector<HandleType, std::decay_t<Type>>;
+    using Container = oki::intl_::AssocSortedVector<HandleType, std::decay_t<Type>>;
 
     using ErasedContainer = oki::intl_::OptimalErasedType<Container<long>>;
 
@@ -72,10 +71,7 @@ public:
      * Returns whether the deletion was successful (which is a no-op
      * by default).
      */
-    bool destroy_entity(oki::Entity entity)
-    {
-        return handGen_.destroy_handle(entity.handle_);
-    }
+    bool destroy_entity(oki::Entity entity) { return handGen_.destroy_handle(entity.handle_); }
 
     /*
      * Adds a component of type Type if one was NOT already bound to this
@@ -90,8 +86,7 @@ public:
     {
         auto& cont = this->get_or_create_cont_<Type>();
 
-        auto [valIter, success]
-            = cont.emplace(entity.handle_, std::forward<Args>(args)...);
+        auto [valIter, success] = cont.emplace(entity.handle_, std::forward<Args>(args)...);
 
         return { valIter->second, success };
     }
@@ -126,8 +121,8 @@ public:
         using Type = std::decay_t<InsertType>;
         auto& cont = this->get_or_create_cont_<Type>();
 
-        auto [valIter, success] = cont.insert_or_assign(
-            entity.handle_, std::forward<InsertType>(value));
+        auto [valIter, success]
+            = cont.insert_or_assign(entity.handle_, std::forward<InsertType>(value));
 
         return std::pair<Type&, bool> { valIter->second, success };
     }
@@ -147,8 +142,7 @@ public:
     Type& emplace_component_unchecked(oki::Entity entity, Args&&... args)
     {
         auto& cont = this->get_or_create_cont_<Type>();
-        auto iter = cont.emplace_unchecked(
-            entity.handle_, std::forward<Args>(args)...);
+        auto iter = cont.emplace_unchecked(entity.handle_, std::forward<Args>(args)...);
 
         return iter->second;
     }
@@ -179,8 +173,7 @@ public:
     bool remove_component(oki::Entity entity)
     {
         return this->call_on_cont_checked_<Type, bool>(
-            [=](auto& container) { return container.erase(entity.handle_); },
-            false);
+            [=](auto& container) { return container.erase(entity.handle_); }, false);
     }
 
     /*
@@ -189,8 +182,7 @@ public:
     template <typename Type>
     void erase_components()
     {
-        this->call_on_cont_checked_<Type>(
-            [](auto& container) { container.clear(); });
+        this->call_on_cont_checked_<Type>([](auto& container) { container.clear(); });
     }
 
     /*
@@ -230,9 +222,7 @@ public:
             [=](auto& container) {
                 auto compIter = container.find(entity.handle_);
 
-                return (compIter != container.end())
-                    ? std::addressof(compIter->second)
-                    : nullptr;
+                return (compIter != container.end()) ? std::addressof(compIter->second) : nullptr;
             },
             nullptr);
     }
@@ -265,8 +255,7 @@ public:
     bool has_component(oki::Entity entity) const noexcept
     {
         return this->call_on_cont_checked_<Type, bool>(
-            [=](auto& container) { return container.contains(entity.handle_); },
-            false);
+            [=](auto& container) { return container.contains(entity.handle_); }, false);
     }
 
     /*
@@ -371,8 +360,7 @@ public:
         auto& c = this->get_or_create_cont_<int>();
 
         // std::unordered_map does not invalidate references so this is ok
-        return ComponentView<Types...>(
-            std::tie(this->get_or_create_cont_<Types>()...));
+        return ComponentView<Types...>(std::tie(this->get_or_create_cont_<Types>()...));
     }
 
 private:
@@ -383,8 +371,7 @@ private:
     template <typename Type>
     Container<Type>& create_cont_()
     {
-        auto [iter, _]
-            = data_.emplace(oki::intl_::get_type<Type>(), Container<Type>());
+        auto [iter, _] = data_.emplace(oki::intl_::get_type<Type>(), Container<Type>());
 
         return iter->second;
     }
@@ -417,15 +404,11 @@ private:
     {
         auto iter = data_.find(oki::intl_::get_type<Type>());
 
-        return iter != data_.end()
-            ? &iter->second.template get_as<Container<Type>>()
-            : nullptr;
+        return iter != data_.end() ? &iter->second.template get_as<Container<Type>>() : nullptr;
     }
 
-    template <typename Type, typename ReturnType, typename Callback,
-        typename DefaultRet>
-    ReturnType call_on_cont_checked_(
-        Callback func, DefaultRet defaultValue) const
+    template <typename Type, typename ReturnType, typename Callback, typename DefaultRet>
+    ReturnType call_on_cont_checked_(Callback func, DefaultRet defaultValue) const
     {
         static_assert(std::is_convertible_v<DefaultRet, ReturnType>);
 
@@ -437,8 +420,7 @@ private:
         return defaultValue;
     }
 
-    template <typename Type, typename ReturnType, typename Callback,
-        typename DefaultRet>
+    template <typename Type, typename ReturnType, typename Callback, typename DefaultRet>
     ReturnType call_on_cont_checked_(Callback func, DefaultRet defaultValue)
     {
         // Trying to do this with two const_casts and a std::as_const was worse

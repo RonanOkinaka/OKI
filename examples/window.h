@@ -27,10 +27,7 @@ public:
     }
 
     // Input should be implemented with signals instead (but I'm lazy)
-    bool key_pressed(int glfwKey)
-    {
-        return glfwGetKey(window_, glfwKey) == GLFW_PRESS;
-    }
+    bool key_pressed(int glfwKey) { return glfwGetKey(window_, glfwKey) == GLFW_PRESS; }
 
 private:
     void step(oki::SystemManager&, oki::SystemOptions& opts) override

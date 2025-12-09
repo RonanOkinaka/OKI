@@ -98,15 +98,14 @@ public:
         // Similarly, we simply iterate over bounding rectangles and the
         // movement characteristics (velocity + acceleration) to calculate our
         // "physics." (Accuracy is neither achieved nor important here.)
-        engine.for_each<Rect, PhysicsVec>(
-            [=](auto, Rect& rect, PhysicsVec& vec) {
-                rect.x1 += vec.velX * elapsed;
-                rect.x2 += vec.velX * elapsed;
-                rect.y1 += vec.velY * elapsed;
-                rect.y2 += vec.velY * elapsed;
-                vec.velX += vec.accX * elapsed;
-                vec.velY += vec.accY * elapsed;
-            });
+        engine.for_each<Rect, PhysicsVec>([=](auto, Rect& rect, PhysicsVec& vec) {
+            rect.x1 += vec.velX * elapsed;
+            rect.x2 += vec.velX * elapsed;
+            rect.y1 += vec.velY * elapsed;
+            rect.y2 += vec.velY * elapsed;
+            vec.velX += vec.accX * elapsed;
+            vec.velY += vec.accY * elapsed;
+        });
     }
 
 private:
@@ -183,8 +182,7 @@ private:
 };
 
 // This class is both a system and an observer (listening for a game-over)
-class BirdSystem : public oki::SimpleEngineSystem,
-                   public oki::Observer<GameOverEvent>
+class BirdSystem : public oki::SimpleEngineSystem, public oki::Observer<GameOverEvent>
 {
 public:
     // Also, we take a handle to the player entity; this is not "pure" ECS-style
@@ -206,12 +204,11 @@ private:
             phys.velY = 0.5f;
         }
 
-        engine.for_each<PipeTag, Rect>(
-            [&rect, &engine](auto, auto, auto pipeRect) {
-                if (pipeRect.overlaps(rect)) {
-                    engine.send(GameOverEvent { engine });
-                }
-            });
+        engine.for_each<PipeTag, Rect>([&rect, &engine](auto, auto, auto pipeRect) {
+            if (pipeRect.overlaps(rect)) {
+                engine.send(GameOverEvent { engine });
+            }
+        });
 
         if (!screenBox_.contains(rect)) {
             engine.send(GameOverEvent { engine });

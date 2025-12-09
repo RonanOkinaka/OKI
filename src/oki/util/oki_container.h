@@ -62,8 +62,7 @@ public:
         // the key is maximal, but skips one extra branch this way
         auto begin = data_.begin(), end = data_.end();
         if (begin == end || data_.back().first < key) {
-            return { data_.emplace(data_.end(), std::piecewise_construct,
-                         std::tuple { key },
+            return { data_.emplace(data_.end(), std::piecewise_construct, std::tuple { key },
                          std::forward_as_tuple(std::forward<Args>(args)...)),
                 true };
         }
@@ -205,11 +204,10 @@ public:
 private:
     DataType data_;
 
-    const_iterator find_key_(
-        Key key, const_iterator begin, const_iterator end) const
+    const_iterator find_key_(Key key, const_iterator begin, const_iterator end) const
     {
-        return std::lower_bound(begin, end, key,
-            [](const auto& kvPair, auto key) { return kvPair.first < key; });
+        return std::lower_bound(
+            begin, end, key, [](const auto& kvPair, auto key) { return kvPair.first < key; });
     }
 
     iterator find_key_(Key key, iterator begin, iterator end)
@@ -240,10 +238,7 @@ private:
         return this->find_key_(key, data_.begin(), data_.end());
     }
 
-    iterator find_key_(Key key)
-    {
-        return this->find_key_(key, data_.begin(), data_.end());
-    }
+    iterator find_key_(Key key) { return this->find_key_(key, data_.begin(), data_.end()); }
 
     bool check_key_iter_(Key key, const_iterator iter) const
     {
@@ -251,8 +246,7 @@ private:
     }
 
     template <bool ASSIGN, typename... Args>
-    std::pair<iterator, bool> try_insert_impl_(
-        Key key, std::tuple<Args...>&& args)
+    std::pair<iterator, bool> try_insert_impl_(Key key, std::tuple<Args...>&& args)
     {
         static_assert(std::is_constructible_v<Type, Args...>);
 
@@ -271,8 +265,7 @@ private:
         }
 
         // Otherwise, DO insert
-        return { data_.emplace(iter, std::piecewise_construct,
-                     std::tuple { key }, std::move(args)),
+        return { data_.emplace(iter, std::piecewise_construct, std::tuple { key }, std::move(args)),
             true };
     }
 };
@@ -294,8 +287,8 @@ enum class Status
 template <typename Key, typename IteratorPair>
 oki::intl_::helper_::Status step_iter_pair(Key& max, IteratorPair& pair)
 {
-    pair.first = std::find_if_not(pair.first, pair.second,
-        [=](const auto& kvPair) { return kvPair.first < max; });
+    pair.first = std::find_if_not(
+        pair.first, pair.second, [=](const auto& kvPair) { return kvPair.first < max; });
 
     if (pair.first == pair.second) {
         return Status::STOP;
@@ -322,8 +315,7 @@ Callback variadic_set_intersection(Callback func, IteratorPairs... iterPairs)
     // cache-coherence
     auto max = helper::get_first_key(iterPairs...);
     while (true) {
-        helper::Status status
-            = std::min({ helper::step_iter_pair(max, iterPairs)... });
+        helper::Status status = std::min({ helper::step_iter_pair(max, iterPairs)... });
 
         if (status == helper::Status::STOP) {
             return func;
