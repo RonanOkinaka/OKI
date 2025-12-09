@@ -47,15 +47,6 @@ TEST_CASE("ComponentManager")
 
         CHECK(compMan.get_component<int>(entity) == 2);
     }
-    SECTION("can update component with reference from bind_component_unchecked()")
-    {
-        compMan.bind_component(entity, 0);
-
-        auto& comp = compMan.bind_component_unchecked(entity, 1);
-        comp = 2;
-
-        CHECK(compMan.get_component<int>(entity) == 2);
-    }
     SECTION("can update component with get_component()")
     {
         compMan.bind_component(entity, 0);

@@ -128,43 +128,6 @@ public:
     }
 
     /*
-     * In-place constructs a component of type Type bound to the provided
-     * entity, assuming (without checking) that there is not already a
-     * component of the same type bound.
-     *
-     * OKI does not support adding multiple components of the same
-     * type to one entity and its behavior is not formally supported in
-     * this state.
-     *
-     * Forwards the supplied arguments to the constructor of Type.
-     */
-    template <typename Type, typename... Args>
-    Type& emplace_component_unchecked(oki::Entity entity, Args&&... args)
-    {
-        auto& cont = this->get_or_create_cont_<Type>();
-        auto iter = cont.emplace_unchecked(entity.handle_, std::forward<Args>(args)...);
-
-        return iter->second;
-    }
-
-    /*
-     * Binds a component to an entity, assuming (without checking) that
-     * there is not already a component of the same type bound.
-     *
-     * OKI does not support adding multiple components of the same
-     * type to one entity and its behavior is not formally supported in
-     * this state.
-     *
-     * Deduces the type and forwards the incoming value to the constructor.
-     */
-    template <typename InsertType>
-    auto& bind_component_unchecked(oki::Entity entity, InsertType&& value)
-    {
-        return this->emplace_component_unchecked<std::decay_t<InsertType>>(
-            entity, std::forward<InsertType>(value));
-    }
-
-    /*
      * Attempts to unbind a component from the provided entity and
      * call its destructor, then returns whether or not a component
      * existed and was deleted.

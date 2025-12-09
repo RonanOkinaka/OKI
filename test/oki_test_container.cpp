@@ -18,7 +18,7 @@
 TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
 {
     oki::intl_::AssocSortedVector<oki::Handle, std::string> map;
-    map.insert(2, "2");
+    map.emplace(2, "2");
 
     auto test_insertion = [&map](auto memFunc, const std::string& funcName) {
         SECTION("allows " + funcName + "() at front")
@@ -39,8 +39,8 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         }
         SECTION("allows " + funcName + "() at center")
         {
-            map.insert(1, "1");
-            map.insert(4, "4");
+            map.emplace(1, "1");
+            map.emplace(4, "4");
             auto [iter, success] = memFunc(map, 3, "3");
 
             REQUIRE(success);
@@ -50,22 +50,11 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
     };
 
     test_insertion(std::mem_fn(&decltype(map)::emplace<const char*>), "emplace");
-    test_insertion(std::mem_fn(&decltype(map)::insert<const char*>), "insert");
     test_insertion(std::mem_fn(&decltype(map)::insert_or_assign<const char*>), "insert_or_assign");
-    test_insertion(
-        [](auto& map, auto key, auto& value) {
-            return std::make_pair(map.emplace_unchecked(key, value), true);
-        },
-        "emplace_unchecked");
-    test_insertion(
-        [](auto& map, auto key, auto& value) {
-            return std::make_pair(map.insert_unchecked(key, value), true);
-        },
-        "insert_unchecked");
 
-    SECTION("does not change values via insert(), returns current value instead")
+    SECTION("does not change values via emplace(), returns current value instead")
     {
-        auto [iter, success] = map.insert(2, "0");
+        auto [iter, success] = map.emplace(2, "0");
 
         REQUIRE_FALSE(success);
         REQUIRE(iter->first == 2);
@@ -86,8 +75,8 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         map.erase(2);
         REQUIRE(map.size() == 0);
 
-        map.insert(1, "1");
-        map.insert(2, "2");
+        map.emplace(1, "1");
+        map.emplace(2, "2");
         REQUIRE(map.size() == 2);
     }
     SECTION("retrieves unconst valid values")
@@ -110,9 +99,9 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
     SECTION("does not retrieve invalid values") { REQUIRE(map.find(0) == map.end()); }
     SECTION("iterates over keys in sorted order")
     {
-        map.insert(1, "1");
-        map.insert(4, "4");
-        map.insert(3, "3");
+        map.emplace(1, "1");
+        map.emplace(4, "4");
+        map.emplace(3, "3");
 
         decltype(map)::key_type i = 1;
         for (auto iter = map.begin(); iter != map.end(); ++iter, ++i) {
@@ -251,7 +240,7 @@ public:
         oki::intl_::AssocSortedVector<oki::Handle, Type> map;
 
         for (auto value : values) {
-            map.insert(value, value);
+            map.emplace(value, value);
         }
 
         return map;

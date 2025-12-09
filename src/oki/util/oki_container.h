@@ -72,22 +72,6 @@ public:
     }
 
     /*
-     * Inserts a new key-value pair into the container.
-     *
-     * Takes a key and a universal reference to some type that must be able
-     * to construct a mapped_type.
-     *
-     * Either inserts and returns an iterator to the newly inserted pair + a
-     * 'true' value, or returns an iterator the old pair and a 'false'
-     * value.
-     */
-    template <typename InsertType>
-    std::pair<iterator, bool> insert(Key key, InsertType&& value)
-    {
-        return this->emplace(key, std::forward<InsertType>(value));
-    }
-
-    /*
      * Guarantees that a pair with key value <key> holds the value <value>.
      *
      * Takes a key and a universal reference to some type that must be able
@@ -102,43 +86,6 @@ public:
     {
         return this->try_insert_impl_<true>(
             key, std::forward_as_tuple(std::forward<InsertType>(value)));
-    }
-
-    /*
-     * Emplaces a key-value pair under the assumption that no item with
-     * that <key> already exists in the container. Does not check.
-     *
-     * Returns an iterator to the newly inserted pair.
-     */
-    template <typename... Args>
-    iterator emplace_unchecked(Key key, Args&&... args)
-    {
-        static_assert(std::is_constructible_v<Type, Args...>);
-
-        // Push new pair to back then rotate it into place
-        data_.emplace_back(std::piecewise_construct, std::tuple { key },
-            std::forward_as_tuple(std::forward<Args>(args)...));
-
-        auto prev = data_.rbegin();
-        auto newPair = prev++;
-        while (prev != data_.rend() && !(prev->first < key)) {
-            std::swap(*prev++, *newPair++);
-        }
-
-        // base() returns the iterator AFTER itself (which is newPair)
-        return prev.base();
-    }
-
-    /*
-     * Inserts a key-value pair under the assumption that no item with
-     * that <key> already exists in the container. Does not check.
-     *
-     * Returns an iterator to the newly inserted pair.
-     */
-    template <typename InsertType>
-    iterator insert_unchecked(Key key, InsertType&& value)
-    {
-        return this->emplace_unchecked(key, std::forward<InsertType>(value));
     }
 
     /*
