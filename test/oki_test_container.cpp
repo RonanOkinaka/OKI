@@ -1,3 +1,4 @@
+#include "oki/oki_container_concept.h"
 #include "oki/oki_handle.h"
 #include "oki/util/oki_container.h"
 
@@ -52,6 +53,13 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
     test_insertion(std::mem_fn(&decltype(map)::emplace<const char*>), "emplace");
     test_insertion(std::mem_fn(&decltype(map)::insert_or_assign<const char*>), "insert_or_assign");
 
+    SECTION("satifies associative container concept")
+    {
+        static_assert(oki::SimpleAssociativeContainer<decltype(map)>);
+
+        // Generate a log at runtime
+        REQUIRE(oki::SimpleAssociativeContainer<decltype(map)>);
+    }
     SECTION("does not change values via emplace(), returns current value instead")
     {
         auto [iter, success] = map.emplace(2, "0");
