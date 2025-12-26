@@ -3,6 +3,7 @@
 
 #include "oki/oki_handle.h"
 
+#include <algorithm>
 #include <forward_list>
 #include <functional>
 #include <unordered_set>

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.20)
 include(FetchContent)
 
 # Fetch GLFW
@@ -23,5 +23,5 @@ target_include_directories(flappy PRIVATE "../src/")
 target_link_libraries(flappy PRIVATE glfw ${OPENGL_LIBRARIES})
 
 # Compiler features
-target_compile_features(flappy PRIVATE cxx_std_17)
+target_compile_features(flappy PRIVATE cxx_std_23)
 set_target_properties(flappy PROPERTIES CXX_EXTENSIONS OFF)

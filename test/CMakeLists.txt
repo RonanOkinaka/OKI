@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.20)
 include(FetchContent)
 
 # Fetch and set up Catch2 dependency
@@ -24,7 +24,7 @@ target_include_directories(oki_unit PRIVATE "../src")
 target_link_libraries(oki_unit PRIVATE Catch2::Catch2WithMain)
 
 # Describe compiler features
-target_compile_features(oki_unit PRIVATE cxx_std_17)
+target_compile_features(oki_unit PRIVATE cxx_std_23)
 set_target_properties(oki_unit PROPERTIES CXX_EXTENSIONS OFF)
 
 # Finally, register the unit tests
