@@ -414,7 +414,7 @@ private:
     static void component_intersection_(Callback& func, Containers&... conts)
     {
         oki::intl_::variadic_set_intersection(
-            [&](auto& val, auto&... vals) {
+            [&](auto&& val, auto&&... vals) {
                 // Unfortunate oversight on my part
                 oki::Entity entity;
                 entity.handle_ = val.first;
