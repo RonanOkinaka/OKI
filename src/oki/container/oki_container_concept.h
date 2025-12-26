@@ -6,9 +6,10 @@
 #include <utility>
 
 namespace oki {
+namespace container {
 
 template <typename Container>
-concept SimpleAssociativeContainer = requires(
+concept ComponentStorageConcept = requires(
     Container container, typename Container::key_type key, typename Container::mapped_type value) {
     // EMPLACE: Take a key and arguments that can be forwarded to construct mapped_type
     {
@@ -48,6 +49,7 @@ concept SimpleAssociativeContainer = requires(
     { container.reserve(std::declval<std::size_t>()) } -> std::same_as<void>;
 };
 
+}
 }
 
 #endif // OKI_CONTAINER_CONCEPT_H

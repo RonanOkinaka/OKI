@@ -1,4 +1,5 @@
-#include "oki/oki_container_concept.h"
+#include "oki/container/oki_container_concept.h"
+#include "oki/container/oki_flat_map.h"
 #include "oki/oki_handle.h"
 #include "oki/util/oki_container.h"
 
@@ -16,9 +17,9 @@
 #include <utility>
 #include <vector>
 
-TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
+TEST_CASE("FlatMap", "[logic][ecs][container]")
 {
-    oki::intl_::AssocSortedVector<oki::Handle, std::string> map;
+    oki::container::FlatMap<oki::Handle, std::string> map;
     map.emplace(2, "2");
 
     auto test_insertion = [&map](auto memFunc, const std::string& funcName) {
@@ -55,10 +56,10 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
 
     SECTION("satifies associative container concept")
     {
-        static_assert(oki::SimpleAssociativeContainer<decltype(map)>);
+        static_assert(oki::container::ComponentStorageConcept<decltype(map)>);
 
         // Generate a log at runtime
-        REQUIRE(oki::SimpleAssociativeContainer<decltype(map)>);
+        REQUIRE(oki::container::ComponentStorageConcept<decltype(map)>);
     }
     SECTION("does not change values via emplace(), returns current value instead")
     {
@@ -138,7 +139,7 @@ TEST_CASE("AssocSortedVector", "[logic][ecs][container]")
         using Value = test_helper::ObjHelper;
         Value::reset();
 
-        using TestType = oki::intl_::AssocSortedVector<oki::Handle, Value>;
+        using TestType = oki::container::FlatMap<oki::Handle, Value>;
 
         // I'm only testing emplace() here because I am lazy and happen to know
         // that this actually tests all of the relevant behavior
@@ -245,7 +246,7 @@ public:
     static auto create_map(std::initializer_list<Type> values)
     {
         static_assert(std::is_integral_v<Type>);
-        oki::intl_::AssocSortedVector<oki::Handle, Type> map;
+        oki::container::FlatMap<oki::Handle, Type> map;
 
         for (auto value : values) {
             map.emplace(value, value);

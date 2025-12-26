@@ -1,6 +1,7 @@
 #ifndef OKI_COMPONENT_H
 #define OKI_COMPONENT_H
 
+#include "oki/container/oki_flat_map.h"
 #include "oki/oki_handle.h"
 #include "oki/util/oki_container.h"
 #include "oki/util/oki_handle_gen.h"
@@ -41,7 +42,7 @@ class ComponentManager
     using HandleType = oki::Entity::HandleType;
 
     template <typename Type>
-    using Container = oki::intl_::AssocSortedVector<HandleType, std::decay_t<Type>>;
+    using Container = oki::container::FlatMap<HandleType, std::decay_t<Type>>;
 
     using ErasedContainer = oki::intl_::OptimalErasedType<Container<long>>;
 
