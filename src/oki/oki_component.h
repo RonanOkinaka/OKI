@@ -3,7 +3,7 @@
 
 #include "oki/container/oki_flat_map.h"
 #include "oki/oki_handle.h"
-#include "oki/util/oki_container.h"
+#include "oki/oki_join.h"
 #include "oki/util/oki_handle_gen.h"
 #include "oki/util/oki_type_erasure.h"
 
@@ -413,7 +413,7 @@ private:
     template <typename Callback, typename... Containers>
     static void component_intersection_(Callback& func, Containers&... conts)
     {
-        oki::intl_::variadic_set_intersection(
+        oki::merge_join(
             [&](auto&& val, auto&&... vals) {
                 // Unfortunate oversight on my part
                 oki::Entity entity;

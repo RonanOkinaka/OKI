@@ -1,7 +1,7 @@
 #include "oki/container/oki_container_concept.h"
 #include "oki/container/oki_flat_map.h"
 #include "oki/oki_handle.h"
-#include "oki/util/oki_container.h"
+#include "oki/oki_join.h"
 
 #include "oki_test_util.h"
 
@@ -237,8 +237,7 @@ public:
     template <typename... Maps>
     void do_test(const std::vector<Type>& expected, const Maps&... maps)
     {
-        auto me = oki::intl_::variadic_set_intersection(
-            *this, std::make_pair(maps.cbegin(), maps.cend())...);
+        auto me = oki::merge_join(*this, std::make_pair(maps.cbegin(), maps.cend())...);
 
         CHECK(expected == me.values_);
     }
