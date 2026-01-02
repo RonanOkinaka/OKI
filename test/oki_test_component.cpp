@@ -11,7 +11,7 @@
 #include <string>
 
 using Value = test_helper::ObjHelper;
-using TestType = oki::ComponentManager;
+using TestType = oki::ComponentManager<>;
 
 TEST_CASE("ComponentManager")
 {

@@ -1,11 +1,13 @@
 #ifndef OKI_COMPONENT_H
 #define OKI_COMPONENT_H
 
+#include "container/oki_flat_map.h"
 #include "oki/container/oki_flat_map.h"
 #include "oki/oki_handle.h"
 #include "oki/oki_join.h"
 #include "oki/util/oki_handle_gen.h"
 #include "oki/util/oki_type_erasure.h"
+#include "util/oki_type_erasure.h"
 
 #include <memory>
 #include <tuple>
@@ -27,7 +29,49 @@ public:
 private:
     HandleType handle_ = oki::intl_::get_invalid_handle_constant();
 
+    template <typename StorageCaster>
     friend class ComponentManager;
+};
+
+/*
+ * Helper class which serves as a default (example) to show how custom container
+ * types may be specified.
+ */
+class DefaultComponentStorageCaster
+{
+private:
+    // This typedef is optional
+    template <typename Type>
+    using ContainerType = container::FlatMap<Entity::HandleType, Type>;
+
+public:
+    // REQUIRED: Specify how containers should be type-erased
+    using AnyType = intl_::OptimalErasedType<ContainerType<void*>>;
+
+    // REQUIRED: Given an `AnyType` and the target component `Type`, recover the
+    // original component storage and return it. This can be stateful.
+    template <typename Type>
+    auto& from_any(AnyType& anyContainer)
+    {
+        return anyContainer.template get_as<ContainerType<Type>>();
+    }
+
+    // REQUIRED: Given an `AnyType` and the target component `Type`, recover the
+    // original component storage and return it. This can be stateful, though the
+    // function itself is const.
+    template <typename Type>
+    const auto& from_any(const AnyType& anyContainer) const
+    {
+        return anyContainer.template get_as<ContainerType<Type>>();
+    }
+
+    // REQUIRED: Create a new component storage for `Type`, which will be
+    // emplaced into
+    template <typename Type>
+    auto create()
+    {
+        return ContainerType<Type>();
+    }
 };
 
 /*
@@ -37,14 +81,16 @@ private:
  * This is the 'core' ECS behavior (it accounts for the data: 'E' and 'C',
  * and the 'S' is mostly handled by the caller because it is code).
  */
+template <typename StorageCaster = DefaultComponentStorageCaster>
 class ComponentManager
 {
+private:
     using HandleType = oki::Entity::HandleType;
 
     template <typename Type>
-    using Container = oki::container::FlatMap<HandleType, std::decay_t<Type>>;
-
-    using ErasedContainer = oki::intl_::OptimalErasedType<Container<long>>;
+    using ContainerTypeOf
+        = std::decay_t<decltype(std::declval<StorageCaster>().template from_any<Type>(
+            std::declval<typename StorageCaster::AnyType&>()))>;
 
 public:
     /*
@@ -298,13 +344,14 @@ public:
         }
 
     private:
-        std::tuple<Container<Types>&...> containers_;
+        std::tuple<ContainerTypeOf<Types>&...> containers_;
 
-        ComponentView(std::tuple<Container<Types>&...> containers)
+        ComponentView(std::tuple<ContainerTypeOf<Types>&...> containers)
             : containers_(containers)
         {
         }
 
+        template <typename S>
         friend class oki::ComponentManager;
     };
 
@@ -321,64 +368,69 @@ public:
     template <typename... Types>
     ComponentView<Types...> get_component_view()
     {
-        auto& c = this->get_or_create_cont_<int>();
-
         // std::unordered_map does not invalidate references so this is ok
         return ComponentView<Types...>(std::tie(this->get_or_create_cont_<Types>()...));
     }
 
 private:
-    std::unordered_map<oki::intl_::TypeIndex, ErasedContainer> data_;
+    std::unordered_map<intl_::TypeIndex, typename StorageCaster::AnyType> data_;
 
     oki::intl_::DefaultHandleGenerator<oki::Entity::HandleType> handGen_;
 
-    template <typename Type>
-    Container<Type>& create_cont_()
-    {
-        auto [iter, _] = data_.emplace(oki::intl_::get_type<Type>(), Container<Type>());
+    StorageCaster storageCaster_;
 
-        return iter->second;
+    template <typename Type>
+    auto& create_cont_()
+    {
+        using DecayedType = std::decay_t<Type>;
+        return data_
+            .emplace(intl_::get_type<DecayedType>(), storageCaster_.template create<DecayedType>())
+            ->second;
     }
 
     template <typename Type>
-    Container<Type>& get_or_create_cont_()
+    auto& get_or_create_cont_()
     {
-        auto type = oki::intl_::get_type<Type>();
+        using DecayedType = std::decay_t<Type>;
+
+        const auto type = intl_::get_type<DecayedType>();
         auto iter = data_.find(type);
 
         if (iter == data_.end()) {
             // This branch is relatively unlikely, so we can avoid
-            // type-erasing a new Container<Type> most of the time
-            iter = data_.emplace(type, Container<Type>()).first;
+            // type-erasing a new container most of the time
+            iter = data_.emplace(type, storageCaster_.template create<DecayedType>()).first;
         }
 
-        return iter->second.template get_as<Container<Type>>();
+        return storageCaster_.template from_any<DecayedType>(iter->second);
     }
 
     template <typename Type>
-    Container<Type>& get_cont_()
+    auto& get_cont_()
     {
-        auto iter = data_.find(oki::intl_::get_type<Type>());
-
-        return iter->second.template get_as<Container<Type>>();
+        using DecayedType = std::decay_t<Type>;
+        return storageCaster_.template from_any<DecayedType>(
+            data_.at(intl_::get_type<DecayedType>()));
     }
 
     template <typename Type>
-    Container<Type>* try_get_cont_()
+    auto* try_get_cont_()
     {
-        auto iter = data_.find(oki::intl_::get_type<Type>());
-
-        return iter != data_.end() ? &iter->second.template get_as<Container<Type>>() : nullptr;
+        using DecayedType = std::decay_t<Type>;
+        auto iter = data_.find(intl_::get_type<DecayedType>());
+        return iter != data_.end() ? &storageCaster_.template from_any<DecayedType>(iter->second)
+                                   : nullptr;
     }
 
     template <typename Type, typename ReturnType, typename Callback, typename DefaultRet>
     ReturnType call_on_cont_checked_(Callback func, DefaultRet defaultValue) const
     {
         static_assert(std::is_convertible_v<DefaultRet, ReturnType>);
+        using DecayedType = std::decay_t<Type>;
 
-        auto contIter = data_.find(oki::intl_::get_type<Type>());
+        auto contIter = data_.find(intl_::get_type<DecayedType>());
         if (contIter != data_.cend()) {
-            return func(contIter->second.template get_as<Container<Type>>());
+            return func(storageCaster_.template from_any<DecayedType>(contIter->second));
         }
 
         return defaultValue;
@@ -390,10 +442,11 @@ private:
         // Trying to do this with two const_casts and a std::as_const was worse
         // than just duplicating this code
         static_assert(std::is_convertible_v<DefaultRet, ReturnType>);
+        using DecayedType = std::decay_t<Type>;
 
         auto contIter = data_.find(oki::intl_::get_type<Type>());
         if (contIter != data_.end()) {
-            return func(contIter->second.template get_as<Container<Type>>());
+            return func(storageCaster_.template from_any<DecayedType>(contIter->second));
         }
 
         return defaultValue;

@@ -8,7 +8,7 @@
 #include <type_traits>
 
 namespace oki {
-class Engine : public oki::ComponentManager, public oki::SignalManager, public oki::SystemManager
+class Engine : public oki::ComponentManager<>, public oki::SignalManager, public oki::SystemManager
 { };
 
 template <typename ChildClass = void>
