@@ -1,13 +1,11 @@
 #ifndef OKI_COMPONENT_H
 #define OKI_COMPONENT_H
 
-#include "container/oki_flat_map.h"
 #include "oki/container/oki_flat_map.h"
 #include "oki/oki_handle.h"
 #include "oki/oki_join.h"
 #include "oki/util/oki_handle_gen.h"
 #include "oki/util/oki_type_erasure.h"
-#include "util/oki_type_erasure.h"
 
 #include <memory>
 #include <tuple>
